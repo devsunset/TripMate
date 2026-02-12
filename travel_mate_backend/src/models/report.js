@@ -101,7 +101,7 @@ const Report = sequelize.define('Report', {
     {
       unique: true,
       fields: ['reporterUserId', 'reportedItineraryId'],
-      where: { reportedItineraryId: { [DataTypes.Op.ne]: null } }
+      where: { reportedItineraryId: { [Op.ne]: null } }
     },
     {
       unique: true,
