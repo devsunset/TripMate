@@ -4,6 +4,7 @@
  */
 
 const express = require('express');
+const cors = require('cors');
 const admin = require('firebase-admin');
 const dotenv = require('dotenv');
 const path = require('path');
@@ -55,6 +56,8 @@ const serviceAccountPath = path.resolve(
 admin.initializeApp({ credential: admin.credential.cert(serviceAccountPath) });
 
 const app = express();
+// CORS: Flutter web (localhost:8080) 등에서 API 호출 허용. 401 등 모든 응답에 헤더 포함되도록 먼저 적용.
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
 // 업로드 이미지 정적 제공 (uploads/ 디렉터리)

@@ -3,6 +3,9 @@ class AppConstants {
   /// 백엔드 API 베이스 URL (이미지 업로드·REST 호출 공통). 에뮬레이터는 10.0.2.2:3000 사용 가능.
   static const String apiBaseUrl = 'http://localhost:3000';
 
+  /// Google Sign-In **웹** 전용 OAuth 2.0 Web Client ID.
+  static const String? googleSignInWebClientId = '926680717914-3ecqkndqufpch8pmjdr8cv8q8q077gll.apps.googleusercontent.com';
+
   static const double paddingExtraSmall = 4.0;
   static const double paddingSmall = 8.0;
   static const double paddingMedium = 16.0;

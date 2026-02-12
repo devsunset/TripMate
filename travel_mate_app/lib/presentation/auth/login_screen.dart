@@ -220,7 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: OutlinedButton.icon(
                     onPressed: _loginWithGoogle,
                     icon: Image.asset(
-                      'assets/images/google_logo.png', // Make sure you have a Google logo asset
+                      'images/google_logo.png',
                       height: 24.0,
                       width: 24.0,
                     ),

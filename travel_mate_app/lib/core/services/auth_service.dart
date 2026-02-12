@@ -1,11 +1,15 @@
 /// Firebase Auth 기반 로그인(이메일/비밀번호, Google), ID 토큰 로컬 저장.
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:travel_mate_app/app/constants.dart';
 
 class AuthService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final GoogleSignIn _googleSignIn = kIsWeb && AppConstants.googleSignInWebClientId != null
+      ? GoogleSignIn(clientId: AppConstants.googleSignInWebClientId)
+      : GoogleSignIn();
 
   /// 인증 상태 스트림(로그인/로그아웃 시 갱신).
   Stream<User?> get user => _firebaseAuth.authStateChanges();

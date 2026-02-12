@@ -19,6 +19,19 @@ Firebase 사이트에서 **TravelMate** 프로젝트만 만들어 둔 상태라�
    - **빌드** → **Authentication** → **시작하기**
    - **로그인 방법** 탭에서 **이메일/비밀번호**, **Google** 사용 설정
 
+   **Google Sign-In 웹용 Client ID 확인 (Flutter 웹 빌드 시 필요)**
+   - **방법 A (Firebase)**  
+     Firebase 콘솔 → **프로젝트 설정**(톱니바퀴) → **일반** → 아래 **내 앱**에서 **웹 앱** 선택  
+     → **SDK 설정 및 구성**에서 "웹 API 키" 등과 함께 OAuth 클라이언트 정보가 나올 수 있음.  
+     없으면 **방법 B**로 이동.
+   - **방법 B (Google Cloud Console)**  
+     [Google Cloud Console - 사용자 인증 정보](https://console.cloud.google.com/apis/credentials) 접속  
+     → 상단에서 Firebase와 동일한 프로젝트(예: travelmate-9b394) 선택  
+     → **사용자 인증 정보** 탭 → **OAuth 2.0 클라이언트 ID** 목록  
+     → 유형이 **"웹 애플리케이션"**인 항목의 **클라이언트 ID** 복사  
+     (형식: `123456789-xxxxxxxx.apps.googleusercontent.com`)  
+     → Flutter 앱의 `lib/app/constants.dart`에서 `googleSignInWebClientId`에 이 값을 넣습니다.
+
 3. **Storage** (선택 사항)
    - 프로필/게시글/일정 이미지는 **백엔드**에서 받아 저장합니다 (POST /api/upload/profile, /post, /itinerary). Firebase Storage는 사용하지 않습니다.
    - 채팅 등 다른 용도로 Storage가 필요하면 **빌드** → **Storage** → **시작하기**에서 설정 가능합니다.

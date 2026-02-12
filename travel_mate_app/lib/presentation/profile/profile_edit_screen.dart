@@ -181,7 +181,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                                   ? FileImage(_pickedImage!)
                                   : (_currentProfileImageUrl != null && _currentProfileImageUrl!.isNotEmpty
                                       ? NetworkImage(_currentProfileImageUrl!) as ImageProvider
-                                      : const AssetImage('assets/images/default_avatar.png') // Placeholder
+                                      : const AssetImage('images/default_avatar.png')
                                   ),
                               child: _pickedImage == null && (_currentProfileImageUrl == null || _currentProfileImageUrl!.isEmpty)
                                   ? Icon(Icons.person, size: 70, color: AppColors.grey)
