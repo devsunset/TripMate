@@ -9,18 +9,17 @@ const UserProfile = require('./userProfile');
 const Tag = require('./tag');
 
 const UserProfileTag = sequelize.define('UserProfileTag', {
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
   userProfileId: {
     type: DataTypes.INTEGER,
+    allowNull: false,
+    primaryKey: true,
     references: { model: UserProfile, key: 'id' },
     onDelete: 'CASCADE',
   },
   tagId: {
     type: DataTypes.INTEGER,
+    allowNull: false,
+    primaryKey: true,
     references: { model: Tag, key: 'id' },
     onDelete: 'CASCADE',
   },
@@ -29,16 +28,11 @@ const UserProfileTag = sequelize.define('UserProfileTag', {
     allowNull: false,
     defaultValue: DataTypes.NOW,
   },
-  updated_at: {
-    type: DataTypes.DATE,
-    allowNull: false,
-    defaultValue: DataTypes.NOW,
-  },
 }, {
   tableName: 'user_profile_tags',
   timestamps: true,
   createdAt: 'created_at',
-  updatedAt: 'updated_at',
+  updatedAt: false,
   indexes: [{ unique: true, fields: ['userProfileId', 'tagId'] }],
 });
 

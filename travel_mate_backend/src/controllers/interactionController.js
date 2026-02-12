@@ -14,7 +14,7 @@ async function toggleInteraction(model, userId, contentId, contentType) {
   const user = await User.findOne({ where: { firebase_uid: userId } });
   if (!user) throw new Error('사용자를 찾을 수 없습니다.');
 
-  const interactionWhere = { userId: user.id };
+  const interactionWhere = { userId: user.id, postId: null, itineraryId: null };
   if (contentType === 'post') {
     interactionWhere.postId = contentId;
     const post = await Post.findByPk(contentId);

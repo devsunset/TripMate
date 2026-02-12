@@ -11,26 +11,24 @@ const Post = require('./post');
 const Itinerary = require('./itinerary');
 
 const Like = sequelize.define('Like', {
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
   userId: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    primaryKey: true,
     references: { model: User, key: 'id' },
     onDelete: 'CASCADE',
   },
   postId: {
     type: DataTypes.INTEGER,
     allowNull: true,
+    primaryKey: true,
     references: { model: Post, key: 'id' },
     onDelete: 'CASCADE',
   },
   itineraryId: {
     type: DataTypes.INTEGER,
     allowNull: true,
+    primaryKey: true,
     references: { model: Itinerary, key: 'id' },
     onDelete: 'CASCADE',
   },
