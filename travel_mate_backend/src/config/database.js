@@ -3,9 +3,10 @@
  * Sequelize 인스턴스를 생성하고 연결 풀을 구성합니다.
  */
 
+const fs = require('fs');
+const path = require('path');
 const { Sequelize } = require('sequelize');
 const dotenv = require('dotenv');
-const path = require('path');
 
 // .env 파일에서 환경 변수 로드 (travel_mate_backend 루트 기준)
 const envFile = process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : '.env';

@@ -48,7 +48,19 @@ class UserProfileModel extends UserProfile {
     );
   }
 
-
+  Map<String, dynamic> toJson() {
+    return {
+      'userId': userId,
+      'nickname': nickname,
+      if (bio != null) 'bio': bio,
+      if (profileImageUrl != null) 'profileImageUrl': profileImageUrl,
+      if (gender != null) 'gender': gender,
+      if (ageRange != null) 'ageRange': ageRange,
+      'travelStyles': travelStyles,
+      'interests': interests,
+      'preferredDestinations': preferredDestinations,
+    };
+  }
 
   @override
   UserProfileModel copyWith({

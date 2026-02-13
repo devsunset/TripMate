@@ -114,8 +114,7 @@ class HomeScreen extends StatelessWidget {
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ).createShader(bounds),
-                        child: Text('Find Your
-Travel Squad', style: GoogleFonts.outfit(fontSize: heroTitleSize, fontWeight: FontWeight.bold, height: 1.15, color: Colors.white)),
+                        child: Text('Find Your\nTravel Squad', style: GoogleFonts.outfit(fontSize: heroTitleSize, fontWeight: FontWeight.bold, height: 1.15, color: Colors.white)),
                       ),
                       SizedBox(height: heroAfterTitle),
                       Text('같은 취향의 여행자와 만나고, 일정을 공유하고, 추억을 나눠보세요.', style: GoogleFonts.plusJakartaSans(fontSize: heroSubtitleSize, color: AppColors.textSecondary, height: 1.4)),
@@ -233,7 +232,7 @@ class _NavCard extends StatelessWidget {
                 label,
                 style: GoogleFonts.plusJakartaSans(fontSize: fontSize, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
                 maxLines: 1,
-                overflow: Text.ellipsis,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

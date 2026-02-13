@@ -11,6 +11,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:travel_mate_app/firebase_options.dart';
 import 'package:travel_mate_app/app/app.dart';
+import 'package:travel_mate_app/app/constants.dart';
 import 'package:travel_mate_app/core/services/auth_service.dart';
 import 'package:travel_mate_app/core/services/fcm_service.dart';
 import 'package:travel_mate_app/data/datasources/profile_remote_datasource.dart';
@@ -57,10 +58,10 @@ void main() async {
 
   // --dart-define을 통해 전달된 환경 변수 설정
   const String apiUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'http://localhost:3000');
-  const String? googleClientId = String.fromEnvironment('GOOGLE_SIGN_IN_WEB_CLIENT_ID', defaultValue: null);
+  const String googleClientIdEnv = String.fromEnvironment('GOOGLE_SIGN_IN_WEB_CLIENT_ID', defaultValue: '');
 
   AppConstants.setApiBaseUrl(apiUrl);
-  AppConstants.setGoogleSignInWebClientId(googleClientId);
+  AppConstants.setGoogleSignInWebClientId(googleClientIdEnv.isEmpty ? null : googleClientIdEnv);
 
   // 에러 발생 시 콘솔에 error 레벨로 로그 출력. 화면에는 간단 안내만 표시.
   FlutterError.onError = (FlutterErrorDetails details) {
