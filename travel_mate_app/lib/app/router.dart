@@ -44,16 +44,11 @@ class HomeScreen extends StatelessWidget {
     final heroTitleSize = isCompact ? 26.0 : (isMedium ? 30.0 : 36.0);
     final heroSubtitleSize = isCompact ? 12.0 : (isMedium ? 13.0 : 15.0);
     final heroAfterTitle = isCompact ? 6.0 : 12.0;
-    final heroAfterSubtitle = isCompact ? 12.0 : (isMedium ? 20.0 : 28.0);
-    final buttonPaddingV = isCompact ? 8.0 : (isMedium ? 10.0 : 14.0);
-    final heroBottom = isCompact ? 16.0 : (isMedium ? 24.0 : 40.0);
-    final sectionTitleSize = isCompact ? 16.0 : (isMedium ? 18.0 : 20.0);
-    final sectionTop = isCompact ? 8.0 : 16.0;
-    final gridSpacing = isCompact ? 8.0 : 12.0;
-    // 그리드 카드 높이: 화면이 작을수록 비율을 넓게(카드 납작하게) 해서 한 화면에 들어가도록
-    final gridAspectRatio = isCompact ? 1.45 : (isMedium ? 1.25 : 1.1);
-    final logoutBottom = isCompact ? 16.0 : (isMedium ? 24.0 : 48.0);
-    final logoutButtonHeight = isCompact ? 40.0 : 48.0;
+    final heroBottom = isCompact ? 12.0 : (isMedium ? 18.0 : 24.0);
+    final gridSpacing = isCompact ? 8.0 : 10.0;
+    // 카드에 큰 아이콘 넣을 수 있도록 비율 (세로 여유)
+    final gridAspectRatio = isCompact ? 1.55 : (isMedium ? 1.45 : 1.35);
+    final bottomPadding = isCompact ? 24.0 : 32.0;
 
     return Scaffold(
       body: Container(
@@ -140,47 +135,11 @@ class HomeScreen extends StatelessWidget {
                       ),
                       SizedBox(height: heroAfterTitle),
                       Text('같은 취향의 여행자와 만나고, 일정을 공유하고, 추억을 나눠보세요.', style: GoogleFonts.plusJakartaSans(fontSize: heroSubtitleSize, color: AppColors.textSecondary, height: 1.4)),
-                      SizedBox(height: heroAfterSubtitle),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: FilledButton.icon(
-                              onPressed: () => context.go('/community'),
-                              icon: Icon(Icons.public, size: isCompact ? 16 : 20),
-                              label: const Text('커뮤니티'),
-                              style: FilledButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                padding: EdgeInsets.symmetric(vertical: buttonPaddingV),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: isCompact ? 8 : 12),
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () => context.go('/itinerary'),
-                              style: OutlinedButton.styleFrom(
-                                padding: EdgeInsets.symmetric(vertical: buttonPaddingV),
-                                side: BorderSide(color: Colors.white.withOpacity(0.2)),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-                              ),
-                              child: const Text('일정 탐색'),
-                            ),
-                          ),
-                        ],
-                      ),
                       SizedBox(height: heroBottom),
                     ],
                   ),
                 ),
               ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingLarge),
-                  child: Text('바로가기', style: GoogleFonts.outfit(fontSize: sectionTitleSize, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                ),
-              ),
-              SliverToBoxAdapter(child: SizedBox(height: sectionTop)),
               SliverPadding(
                 padding: EdgeInsets.symmetric(horizontal: AppConstants.paddingLarge),
                 sliver: SliverGrid(
@@ -191,33 +150,14 @@ class HomeScreen extends StatelessWidget {
                     childAspectRatio: gridAspectRatio,
                   ),
                   delegate: SliverChildListDelegate([
-                    _NavCard(icon: Icons.search, label: '동행 찾기', color: AppColors.secondary, onTap: () => context.go('/matching/search'), compact: isCompact),
-                    _NavCard(icon: Icons.chat_bubble_outline, label: '채팅', color: AppColors.primary, onTap: () => context.go('/chat'), compact: isCompact),
+                    _NavCard(icon: Icons.person_search_rounded, label: '동행 찾기', color: AppColors.secondary, onTap: () => context.go('/matching/search'), compact: isCompact),
+                    _NavCard(icon: Icons.chat_bubble_outline_rounded, label: '채팅', color: AppColors.primary, onTap: () => context.go('/chat'), compact: isCompact),
                     _NavCard(icon: Icons.article_outlined, label: '커뮤니티', color: AppColors.accent, onTap: () => context.go('/community'), compact: isCompact),
-                    _NavCard(icon: Icons.calendar_month, label: '일정', color: AppColors.secondary, onTap: () => context.go('/itinerary'), compact: isCompact),
+                    _NavCard(icon: Icons.calendar_month_rounded, label: '일정', color: AppColors.secondary, onTap: () => context.go('/itinerary'), compact: isCompact),
                   ]),
                 ),
               ),
-              SliverToBoxAdapter(child: SizedBox(height: isCompact ? 16 : 32)),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingLarge),
-                  child: OutlinedButton.icon(
-                    onPressed: () async {
-                      await FirebaseAuth.instance.signOut();
-                      if (context.mounted) context.go('/login');
-                    },
-                    icon: Icon(Icons.logout, size: isCompact ? 16 : 18),
-                    label: const Text('로그아웃'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.textSecondary,
-                      side: BorderSide(color: Colors.white.withOpacity(0.1)),
-                      minimumSize: Size(double.infinity, logoutButtonHeight),
-                    ),
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(child: SizedBox(height: logoutBottom)),
+              SliverToBoxAdapter(child: SizedBox(height: bottomPadding)),
             ],
           ),
         ),
@@ -237,22 +177,47 @@ class _NavCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final padding = compact ? 10.0 : AppConstants.paddingMedium;
-    final iconWrap = compact ? 10.0 : 14.0;
-    final iconSize = compact ? 22.0 : 28.0;
-    final gap = compact ? 6.0 : 12.0;
+    final padding = compact ? 10.0 : 14.0;
+    final iconWrap = compact ? 14.0 : 18.0;
+    final iconSize = compact ? 30.0 : 38.0;
+    final gap = compact ? 6.0 : 10.0;
     final fontSize = compact ? 12.0 : 14.0;
+    // 다크 배경과 구분: 글래스 느낌 + 네온 테두리/글로우
+    const cardSurfaceLight = Color(0xFF16162A);
+    const cardSurfaceLighter = Color(0xFF1C1C34);
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppConstants.cardRadius),
+        borderRadius: BorderRadius.circular(18),
         child: Container(
-          padding: EdgeInsets.all(padding),
+          padding: EdgeInsets.symmetric(horizontal: padding, vertical: padding + 6),
           decoration: BoxDecoration(
-            color: AppColors.card.withOpacity(0.8),
-            borderRadius: BorderRadius.circular(AppConstants.cardRadius),
-            border: Border.all(color: Colors.white.withOpacity(0.08)),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: color.withOpacity(0.6), width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.18),
+                blurRadius: 20,
+                spreadRadius: 0,
+                offset: const Offset(0, 6),
+              ),
+              BoxShadow(
+                color: Colors.black.withOpacity(0.25),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                cardSurfaceLight,
+                cardSurfaceLighter,
+                color.withOpacity(0.06),
+              ],
+              stops: const [0.0, 0.6, 1.0],
+            ),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -260,13 +225,32 @@ class _NavCard extends StatelessWidget {
               Container(
                 padding: EdgeInsets.all(iconWrap),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(compact ? 10 : 14),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      color.withOpacity(0.35),
+                      color.withOpacity(0.2),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: color.withOpacity(0.25),
+                      blurRadius: 12,
+                      spreadRadius: 0,
+                    ),
+                  ],
                 ),
                 child: Icon(icon, color: color, size: iconSize),
               ),
               SizedBox(height: gap),
-              Text(label, style: GoogleFonts.plusJakartaSans(fontSize: fontSize, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+              Text(
+                label,
+                style: GoogleFonts.plusJakartaSans(fontSize: fontSize, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
           ),
         ),
