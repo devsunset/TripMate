@@ -99,34 +99,11 @@ app.get('/', (req, res) => {
 // 전역 에러 핸들러 (라우트 등록 후 마지막에 적용)
 app.use(errorHandler);
 
-/**
- * 게시글 카테고리 초기화
- * DB 동기화 후 기본 카테고리가 없으면 생성합니다.
- */
-async function initCategories() {
-  const categories = [
-    { name: 'General', description: '일반 토론 및 질문' },
-    { name: 'Tips', description: '여행 팁과 조언' },
-    { name: 'Stories', description: '여행 이야기 공유' },
-    { name: 'Questions', description: '여행 관련 질문' },
-    { name: 'Meetups', description: '현지/여행 밋업 모임' },
-  ];
-
-  for (const category of categories) {
-    await PostCategory.findOrCreate({
-      where: { name: category.name },
-      defaults: category,
-    });
-  }
-  console.log('게시글 카테고리 초기화 완료 (또는 이미 존재).');
-}
-
-// DB 동기화 후 카테고리 초기화, 서버 리스닝
+// DB 동기화 후 서버 리스닝 (카테고리 등 초기 데이터는 DB에 이미 있음)
 sequelize
   .sync({ alter: true })
-  .then(async () => {
+  .then(() => {
     console.log('데이터베이스 동기화 완료');
-    await initCategories();
   })
   .catch((err) => {
     console.error('데이터베이스 동기화 오류:', err);

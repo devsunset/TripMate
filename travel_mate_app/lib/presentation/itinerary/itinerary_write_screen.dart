@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io' if (dart.library.html) 'package:travel_mate_app/core/io_stub/file_stub.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:travel_mate_app/core/io_stub/picked_image_widget_io.dart' if (dart.library.html) 'package:travel_mate_app/core/io_stub/picked_image_widget_web.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -342,12 +343,7 @@ class _ItineraryWriteScreenState extends State<ItineraryWriteScreen> {
                         final File image = entry.value;
                         return Stack(
                           children: [
-                            Image.file(
-                              image,
-                              width: 100,
-                              height: 100,
-                              fit: BoxFit.cover,
-                            ),
+                            widgetForPickedFile(image, width: 100, height: 100, fit: BoxFit.cover),
                             Positioned(
                               right: 0,
                               top: 0,
