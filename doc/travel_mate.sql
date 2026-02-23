@@ -2,6 +2,31 @@ CREATE DATABASE IF NOT EXISTS `travel_mate` CHARACTER SET utf8mb4 COLLATE utf8mb
 
 USE `travel_mate`;
 
+-- -----------------------------------------------------
+-- 테이블 존재 시 삭제 후 재생성 (실행 시 기존 테이블·데이터 제거됨)
+-- -----------------------------------------------------
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS `reports`;
+DROP TABLE IF EXISTS `fcm_tokens`;
+DROP TABLE IF EXISTS `private_messages`;
+DROP TABLE IF EXISTS `chat_rooms`;
+DROP TABLE IF EXISTS `bookmarks`;
+DROP TABLE IF EXISTS `likes`;
+DROP TABLE IF EXISTS `comments`;
+DROP TABLE IF EXISTS `itinerary_activities`;
+DROP TABLE IF EXISTS `itinerary_days`;
+DROP TABLE IF EXISTS `posts`;
+DROP TABLE IF EXISTS `itineraries`;
+DROP TABLE IF EXISTS `user_profile_tags`;
+DROP TABLE IF EXISTS `user_profiles`;
+DROP TABLE IF EXISTS `tags`;
+DROP TABLE IF EXISTS `post_categories`;
+DROP TABLE IF EXISTS `users`;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- -----------------------------------------------------
 -- TripMate 데이터베이스 스키마
 -- 데이터베이스: MariaDB
 -- 인코딩: utf8mb4
@@ -21,7 +46,7 @@ USE `travel_mate`;
 -- -----------------------------------------------------
 -- Table `users`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `users` (
+CREATE TABLE `users` (
   `id` INT NOT NULL AUTO_INCREMENT COMMENT '내부 PK. API/앱 식별자에는 email 사용.',
   `firebase_uid` VARCHAR(255) NOT NULL UNIQUE COMMENT 'Firebase 인증 UID',
   `email` VARCHAR(255) NOT NULL UNIQUE COMMENT '사용자 이메일 (서비스 내 사용자 아이디로 사용, 변경 불가)',
@@ -35,7 +60,7 @@ COMMENT = '사용자 기본 정보. API/클라이언트 식별자=email, 내부 
 -- -----------------------------------------------------
 -- Table `user_profiles`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `user_profiles` (
+CREATE TABLE `user_profiles` (
   `id` INT NOT NULL AUTO_INCREMENT COMMENT '프로필 고유 ID (Primary Key)',
   `userId` INT NOT NULL UNIQUE COMMENT 'users.id (내부 FK). API에는 users.email을 userId로 반환.',
   `nickname` VARCHAR(255) NOT NULL UNIQUE COMMENT '사용자 닉네임 (영문+숫자 랜덤 생성, 중복 검사)',
@@ -61,7 +86,7 @@ COMMENT = '사용자 프로필 정보. 닉네임, 소개, 여행 스타일 등 �
 -- -----------------------------------------------------
 -- Table `post_categories`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `post_categories` (
+CREATE TABLE `post_categories` (
   `id` INT NOT NULL AUTO_INCREMENT COMMENT '카테고리 고유 ID',
   `name` VARCHAR(255) NOT NULL UNIQUE COMMENT '카테고리 이름 (예: 질문, 팁, 후기)',
   `description` TEXT COMMENT '카테고리 설명',
@@ -75,7 +100,7 @@ COMMENT = '커뮤니티 게시글 카테고리 분류 테이블';
 -- -----------------------------------------------------
 -- Table `tags`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `tags` (
+CREATE TABLE `tags` (
   `id` INT NOT NULL AUTO_INCREMENT COMMENT '태그 고유 ID',
   `name` VARCHAR(255) NOT NULL UNIQUE COMMENT '태그 이름',
   `type` VARCHAR(255) NOT NULL COMMENT '태그 타입 (예: travel_style, interest)',
@@ -90,7 +115,7 @@ COMMENT = '여행 스타일, 관심사 등 각종 태그 정보를 저장하는 
 -- -----------------------------------------------------
 -- Table `user_profile_tags`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `user_profile_tags` (
+CREATE TABLE `user_profile_tags` (
   `userProfileId` INT NOT NULL COMMENT 'user_profiles 테이블 외래 키',
   `tagId` INT NOT NULL COMMENT 'tags 테이블 외래 키',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -135,7 +160,7 @@ COMMENT = '사용자가 작성한 여행 일정의 기본 정보';
 -- -----------------------------------------------------
 -- Table `posts`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `posts` (
+CREATE TABLE `posts` (
   `id` INT NOT NULL AUTO_INCREMENT COMMENT '게시글 고유 ID',
   `authorId` INT NOT NULL COMMENT '작성자 (users.id)',
   `categoryId` INT NOT NULL COMMENT '카테고리 (post_categories.id)',
@@ -162,7 +187,7 @@ COMMENT = '커뮤니티 게시글 정보';
 -- -----------------------------------------------------
 -- Table `itinerary_days`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `itinerary_days` (
+CREATE TABLE `itinerary_days` (
   `id` INT NOT NULL AUTO_INCREMENT COMMENT '일차 고유 ID',
   `itineraryId` INT NOT NULL COMMENT '일정 (itineraries.id)',
   `dayNumber` INT NOT NULL COMMENT '일차 번호 (1, 2, ...)',
@@ -182,7 +207,7 @@ COMMENT = '여행 일정의 각 일차별 정보';
 -- -----------------------------------------------------
 -- Table `itinerary_activities`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `itinerary_activities` (
+CREATE TABLE `itinerary_activities` (
   `id` INT NOT NULL AUTO_INCREMENT COMMENT '활동 고유 ID',
   `itineraryDayId` INT NOT NULL COMMENT '일차 (itinerary_days.id)',
   `time` VARCHAR(255) COMMENT '활동 시간 (예: 09:00, 점심)',
@@ -204,7 +229,7 @@ COMMENT = '각 일차에 포함된 세부 활동 정보';
 -- -----------------------------------------------------
 -- Table `comments`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `comments` (
+CREATE TABLE `comments` (
   `id` INT NOT NULL AUTO_INCREMENT COMMENT '댓글 고유 ID',
   `authorId` INT NOT NULL COMMENT '작성자 (users.id)',
   `postId` INT COMMENT '관련 게시글 (posts.id)',
@@ -241,7 +266,7 @@ COMMENT = '게시글 또는 일정에 대한 댓글 및 대댓글';
 -- -----------------------------------------------------
 -- Table `likes`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `likes` (
+CREATE TABLE `likes` (
   `userId` INT NOT NULL COMMENT '사용자 (users.id)',
   `postId` INT COMMENT '게시글 (posts.id)',
   `itineraryId` INT COMMENT '일정 (itineraries.id)',
@@ -268,7 +293,7 @@ COMMENT = '사용자의 좋아요 정보 (게시글 또는 일정)';
 -- -----------------------------------------------------
 -- Table `bookmarks`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `bookmarks` (
+CREATE TABLE `bookmarks` (
   `userId` INT NOT NULL COMMENT '사용자 (users.id)',
   `postId` INT COMMENT '게시글 (posts.id)',
   `itineraryId` INT COMMENT '일정 (itineraries.id)',
@@ -295,7 +320,7 @@ COMMENT = '사용자의 북마크 정보 (게시글 또는 일정)';
 -- -----------------------------------------------------
 -- Table `chat_rooms`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `chat_rooms` (
+CREATE TABLE `chat_rooms` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `firestoreChatId` VARCHAR(255) NOT NULL UNIQUE COMMENT 'Firestore 문서 ID. 두 사용자 이메일 정렬 후 _ 로 연결 (예: a@b.com_user@x.com)',
   `user1Id` INT NOT NULL COMMENT '참여자1 (users.id)',
@@ -322,7 +347,7 @@ COMMENT = '1:1 채팅방 정보';
 -- -----------------------------------------------------
 -- Table `private_messages`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `private_messages` (
+CREATE TABLE `private_messages` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `senderId` INT NOT NULL COMMENT '보내는 사람 (users.id)',
   `receiverId` INT NOT NULL COMMENT '받는 사람 (users.id)',
@@ -347,7 +372,7 @@ COMMENT = '사용자 간 1:1 쪽지';
 -- -----------------------------------------------------
 -- Table `fcm_tokens`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `fcm_tokens` (
+CREATE TABLE `fcm_tokens` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `userId` INT NOT NULL COMMENT '사용자 (users.id)',
   `token` VARCHAR(255) NOT NULL COMMENT 'FCM 디바이스 토큰',
@@ -364,7 +389,7 @@ COMMENT = '푸시 알림을 위한 사용자별 FCM 디바이스 토큰';
 -- -----------------------------------------------------
 -- Table `reports`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `reports` (
+CREATE TABLE `reports` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `reporterUserId` INT NOT NULL COMMENT '신고자 (users.id)',
   `reportedUserId` INT COMMENT '신고된 사용자 (users.id)',
