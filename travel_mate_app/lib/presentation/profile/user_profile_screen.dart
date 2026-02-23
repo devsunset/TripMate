@@ -9,6 +9,7 @@ import 'package:travel_mate_app/app/constants.dart';
 import 'package:travel_mate_app/domain/entities/user_profile.dart';
 import 'package:travel_mate_app/presentation/common/app_app_bar.dart';
 import 'package:travel_mate_app/domain/usecases/get_user_profile.dart';
+import 'package:travel_mate_app/domain/usecases/create_chat_room.dart';
 import 'package:travel_mate_app/presentation/common/report_button_widget.dart';
 import 'package:travel_mate_app/core/services/auth_service.dart';
 
@@ -80,12 +81,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           if (!isMyProfile && _userProfile != null) ...[
             IconButton(
               icon: const Icon(Icons.chat_bubble_outline_rounded),
-              onPressed: () {
-                final cur = FirebaseAuth.instance.currentUser!.email ?? FirebaseAuth.instance.currentUser!.uid;
-                final other = widget.userId;
-                final parts = [cur, other]..sort();
-                final chatRoomId = '${parts[0]}_${parts[1]}';
-                context.go('/chat/room/${Uri.encodeComponent(chatRoomId)}', extra: _userProfile!.nickname);
+              onPressed: () async {
+                try {
+                  final createChatRoom = Provider.of<CreateChatRoom>(context, listen: false);
+                  await createChatRoom.execute(widget.userId);
+                  if (context.mounted) context.go('/chat');
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('채팅 요청에 실패했습니다. $e')),
+                    );
+                  }
+                }
               },
             ),
             ReportButtonWidget(entityType: ReportEntityType.user, entityId: widget.userId),

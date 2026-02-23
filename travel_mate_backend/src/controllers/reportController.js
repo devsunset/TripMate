@@ -7,6 +7,7 @@ const User = require('../models/user');
 const Post = require('../models/post');
 const Itinerary = require('../models/itinerary');
 const Comment = require('../models/comment');
+const { LIMITS, checkMaxLength } = require('../utils/fieldLimits');
 
 /** 신고 접수: entityType·entityId·reportType 필수 */
 exports.submitReport = async (req, res, next) => {
@@ -16,6 +17,12 @@ exports.submitReport = async (req, res, next) => {
 
     if (!entityType || !entityId || !reportType) {
       return res.status(400).json({ message: '대상 타입, 대상 ID, 신고 유형이 필요합니다.' });
+    }
+    let err = checkMaxLength(reportType, LIMITS.reportType, '신고 유형');
+    if (err) return res.status(400).json({ message: err });
+    if (reason != null) {
+      err = checkMaxLength(reason, LIMITS.reportReason, '신고 사유');
+      if (err) return res.status(400).json({ message: err });
     }
 
     const reporter = await User.findOne({ where: { firebase_uid: reporterFirebaseUid } });

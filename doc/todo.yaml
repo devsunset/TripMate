@@ -1,7 +1,6 @@
 project:
   name: 트래블 메이트
-  description: Flutter 기반의 모바일 커뮤니티 애플리케이션으로, 사용자가 여행 동반자를 찾고, 여행 정보를 공유하며, 1:1 실시간 채팅을 통해 소통할 수 있도록 지원합니다. 백엔드 서비스는
-    Firebase와 Node.js 기반 API 서버, MariaDB를 활용합니다.
+  description: Flutter 기반의 모바일 커뮤니티 애플리케이션으로, 사용자가 여행 동반자를 찾고, 여행 정보를 공유하며, 채팅 요청 후 신청한/신청받은 채팅방 목록에서 선택해 1:1 실시간 채팅으로 소통할 수 있도록 지원합니다. 사용자 식별자는 이메일(users PK=email). 백엔드는 Firebase와 Node.js API 서버, MariaDB를 활용하며, 이미지는 백엔드 저장(Firebase Storage 미사용).
 tasks:
   - id: setup-001-environment
     title: 개발 환경 및 프로젝트 초기 설정
@@ -108,11 +107,11 @@ tasks:
     subtasks:
       - id: db-002-users-table
         title: "`users` 테이블 스키마 정의 및 마이그레이션"
-        description: 사용자의 기본 정보를 저장하는 `users` 테이블을 생성합니다. `firebase_uid`와 `email` 필드는 UNIQUE 제약 조건을 가집니다.
+        description: 사용자의 기본 정보를 저장하는 `users` 테이블을 생성합니다. Primary Key는 `email`이며, `firebase_uid`는 UNIQUE. AUTO_INCREMENT id는 사용하지 않습니다.
         category: data
         implementation_notes:
-          - TRD의 `users` 스키마를 정확히 따릅니다.
-          - "`firebase_uid`와 `email`에 UNIQUE 인덱스를 추가하여 데이터 무결성을 보장합니다."
+          - TRD의 `users` 스키마를 따릅니다. PK=email, 모든 사용자 FK(userId, authorId 등)는 users.email을 참조합니다.
+          - "`firebase_uid`에 UNIQUE 인덱스를 추가하여 데이터 무결성을 보장합니다."
           - 생성 및 업데이트 타임스탬프 필드를 포함합니다.
       - id: db-002-profiles-tables
         title: "`user_profiles`, `tags`, `user_profile_tags` 테이블 스키마 정의 및 마이그레이션"
@@ -120,7 +119,7 @@ tasks:
         category: data
         implementation_notes:
           - TRD의 `user_profiles`, `tags`, `user_profile_tags` 스키마를 따릅니다.
-          - "`user_profiles.user_id`는 `users.id`를 참조하는 외래 키로, `ON DELETE CASCADE`를 설정합니다."
+          - "`user_profiles.userId`는 `users.email`을 참조하는 외래 키로, `ON DELETE CASCADE`를 설정합니다."
           - "`user_profile_tags`는 `user_id`와 `tag_id`의 복합 기본 키를 가집니다."
       - id: db-002-messaging-tables
         title: "`private_messages`, `chat_rooms`, `fcm_tokens` 테이블 스키마 정의 및 마이그레이션"
@@ -128,8 +127,8 @@ tasks:
         category: data
         implementation_notes:
           - TRD의 `private_messages`, `chat_rooms`, `fcm_tokens` 스키마를 따릅니다.
-          - 메시징 관련 테이블의 `user_id` 컬럼은 `users.id`를 참조하며 `ON DELETE CASCADE`를 설정합니다.
-          - "`chat_rooms` 테이블에 `unique_chat_room (user1_id, user2_id)` 제약 조건을 추가하여 중복 채팅방 생성을 방지합니다."
+          - 메시징 관련 테이블의 사용자 FK는 `users.email`을 참조하며 `ON DELETE CASCADE`를 설정합니다.
+          - "`chat_rooms` 테이블에 `user1Id`, `user2Id`(users.email FK) 및 `createdByUserId`(채팅 신청자 이메일)를 두고, `uq_chat_users (user1Id, user2Id)` 제약으로 중복 채팅방 생성을 방지합니다."
           - "`fcm_tokens` 테이블에 `(user_id, token)` 복합 UNIQUE 인덱스를 추가합니다."
       - id: db-002-community-tables
         title: "`posts`, `itineraries`, `comments`, `likes`, `bookmarks`, `reports` 테이블 스키마 정의 및 마이그레이션"
@@ -370,7 +369,7 @@ tasks:
         category: api
         implementation_notes:
           - Firebase Admin SDK의 `deleteUser(uid)` 메서드를 사용하여 Firebase Auth 계정을 삭제합니다.
-          - MariaDB에서 `users` 테이블의 해당 `user_id`를 삭제합니다. 외래 키 `ON DELETE CASCADE` 설정 덕분에 `user_profiles`,
+          - MariaDB에서 `users` 테이블의 해당 사용자(users.email 기준)를 삭제합니다. 외래 키 `ON DELETE CASCADE` 설정 덕분에 `user_profiles`,
             `private_messages`, `chat_rooms`, `fcm_tokens`, `posts`, `itineraries`, `comments`, `likes`, `bookmarks`,
             `reports` 등 모든 관련 데이터가 자동으로 삭제되어야 합니다.
           - 탈퇴 요청 시 `authMiddleware`를 통해 본인임을 검증합니다.
@@ -534,7 +533,7 @@ tasks:
   - id: match-008-realtime-chat
     title: 1:1 실시간 채팅 기능 구현
     priority: P0
-    description: 비공개 쪽지 수락 시 1:1 실시간 채팅방을 생성하고, Firebase Firestore를 사용하여 실시간 메시지 전송 및 수신 기능을 구현합니다.
+    description: 상대에게 채팅 요청 시 채팅방을 생성·반환하고, 내가 참여한 채팅방(신청한/신청받은) 목록만 표시하여 그 안에서 선택해 대화합니다. 채팅방 찾기 조건(검색/필터)은 제공하지 않습니다. 메시지는 Firebase Firestore로 실시간 전송·수신합니다.
     files:
       - path: travel_mate_app/lib/presentation/chat/chat_list_screen.dart
         description: 채팅방 목록 UI 컴포넌트
@@ -563,11 +562,10 @@ tasks:
     subtasks:
       - id: match-008-flutter-chat-ui
         title: Flutter 채팅방 목록 및 실시간 채팅 UI 개발
-        description: "`ChatListScreen`에서 현재 진행 중인 채팅방 목록을 표시하고, `ChatRoomScreen`에서 과거 메시지 로드 및 실시간 메시지 전송/수신 UI를 구현합니다. NFR1.2를
-          충족하도록 실시간 동기화를 구현합니다."
+        description: "`ChatListScreen`에서 GET /api/chat/rooms로 내가 참여한 채팅방(신청한/신청받은) 목록만 표시하고, '내가 신청'·'신청받음' 구분을 표시합니다. 채팅방 찾기 조건은 없습니다. `ChatRoomScreen`에서 과거 메시지 로드 및 실시간 메시지 전송/수신 UI를 구현합니다."
         category: ui
         implementation_notes:
-          - 채팅방 목록은 마지막 메시지 및 시간 정보를 포함하여 표시합니다.
+          - 채팅 목록은 API 기반이며, 프로필·게시글 상세에서 '채팅하기' 시 채팅 요청(POST /api/chat/room) 후 채팅 목록(/chat)으로 이동합니다.
           - 채팅방 UI는 메시지 버블, 타임스탬프, 스크롤 최적화 등을 고려하여 사용자 친화적으로 구현합니다.
           - 메시지 전송 시 낙관적 UI 업데이트(Optimistic UI Update)를 고려하여 사용자 경험을 향상시킵니다.
       - id: match-008-firestore-integration
@@ -580,14 +578,13 @@ tasks:
           - 메시지 데이터 모델은 `sender_id`, `receiver_id`, `content`, `timestamp` 등을 포함합니다.
           - Firestore `CollectionReference`의 `snapshots()` 메서드를 사용하여 실시간 스트림을 구독하고 UI를 업데이트합니다.
       - id: match-008-backend-chat-room-api
-        title: Node.js API 서버 채팅방 생성 API 구현
-        description: 초기 쪽지 수락 시 호출되는 `POST /api/chat/room` 엔드포인트를 구현하여 MariaDB에 `chat_rooms` 메타데이터를 저장하고, Firestore에 초기 채팅방 문서를
-          생성합니다.
+        title: Node.js API 서버 채팅 요청·채팅방 목록 API 구현
+        description: "`POST /api/chat/room`(partnerId=상대 이메일)으로 채팅 요청 시 기존 방이 있으면 반환, 없으면 생성(createdByUserId=현재 사용자). `GET /api/chat/rooms`로 내가 참여한 채팅방 목록(신청한/신청받은 구분)을 반환합니다."
         category: api
         implementation_notes:
-          - 클라이언트에서 요청 시, `user1_id`와 `user2_id`를 기반으로 `chat_rooms` 테이블에 채팅방 정보를 저장하고, `firestore_chat_id`를 생성합니다.
-          - Firestore `chat_id`를 MariaDB에 저장하여 두 데이터베이스 간의 연동을 유지합니다.
-          - 선택적으로 `firebase-admin` SDK를 사용하여 서버에서 Firestore 초기 채팅방 생성을 처리할 수 있습니다.
+          - 클라이언트에서 요청 시, user1Id·user2Id(이메일 정렬) 및 createdByUserId(채팅 신청자)를 저장하고, firestoreChatId를 생성합니다.
+          - GET /api/chat/rooms는 user1Id 또는 user2Id가 현재 사용자 이메일인 방만 반환하며, isRequestedByMe(createdByUserId=나) 등 정보를 포함합니다.
+          - Firestore chat_id는 firestoreChatId와 동일하게 사용하여 메시지 실시간 동기화에 활용합니다.
       - id: match-008-firestore-security-rules
         title: Firebase Firestore 보안 규칙 설정
         description: Firestore 보안 규칙을 설정하여 각 채팅방에 참여한 사용자만 해당 채팅방의 메시지를 읽고 쓸 수 있도록 엄격하게 권한을 제한합니다. NFR2.3을 준수합니다.
@@ -645,8 +642,7 @@ tasks:
     subtasks:
       - id: community-009-flutter-ui
         title: Flutter 게시글 목록, 상세, 작성/수정 UI 개발
-        description: "`CommunityScreen`에서 게시글 목록을 표시하고, 카테고리 필터링 및 검색 기능을 구현합니다. `PostDetailScreen`에서 게시글 내용과 이미지를 표시하고,
-          `PostWriteScreen`에서 제목, 내용, 카테고리 입력 및 `image_picker`를 통한 이미지 첨부 기능을 개발합니다."
+        description: "`CommunityScreen`에서 게시글 목록을 표시하고, 카테고리 필터링 및 검색 기능을 구현합니다. `PostDetailScreen`에서 게시글 내용과 이미지를 표시하며, 작성자가 아닐 때 '채팅하기' 버튼으로 작성자에게 채팅 요청을 보낼 수 있습니다. `PostWriteScreen`에서 제목, 내용, 카테고리 입력 및 `image_picker`를 통한 이미지 첨부 기능을 개발합니다."
         category: ui
         implementation_notes:
           - 게시글 목록은 `ListView.builder`로 구현하여 효율적으로 렌더링하고, 무한 스크롤 기능을 포함합니다.

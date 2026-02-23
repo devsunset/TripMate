@@ -4,6 +4,7 @@
  */
 const FcmToken = require('../models/fcmToken');
 const User = require('../models/user');
+const { LIMITS, checkMaxLength } = require('../utils/fieldLimits');
 
 /** FCM 토큰 등록(있으면 deviceType 갱신) */
 exports.registerFcmToken = async (req, res, next) => {
@@ -12,6 +13,12 @@ exports.registerFcmToken = async (req, res, next) => {
     const firebaseUid = req.user.uid;
     if (!token) {
       return res.status(400).json({ message: 'FCM 토큰이 필요합니다.' });
+    }
+    let err = checkMaxLength(token, LIMITS.fcmToken, 'FCM 토큰');
+    if (err) return res.status(400).json({ message: err });
+    if (deviceType != null) {
+      err = checkMaxLength(deviceType, LIMITS.deviceType, '기기 유형');
+      if (err) return res.status(400).json({ message: err });
     }
     const user = await User.findOne({ where: { firebase_uid: firebaseUid } });
     if (!user) {

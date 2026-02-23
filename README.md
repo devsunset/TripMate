@@ -1,6 +1,6 @@
 # TripMate (트래블 메이트)
 
-여행 동반자 매칭 및 여행 정보 공유를 위한 모바일 커뮤니티 앱 프로젝트입니다.
+여행 동반자 매칭 및 여행 정보 공유를 위한 모바일 커뮤니티 앱 프로젝트입니다. 사용자 식별자는 이메일(users PK=email)이며, 채팅은 상대에게 채팅 요청 후 신청한/신청받은 채팅방 목록에서 선택해 대화합니다. 프로필·게시글 상세에서 작성자에게 채팅 요청을 보낼 수 있습니다.
 
 ## 프로젝트 구성
 
@@ -55,9 +55,11 @@ MariaDB에 스키마 생성이 필요하면 doc/travel_mate.sql 을 실행하세
 ## 문서
 
 - **doc/firebase.txt** — Firebase 연동 상세 가이드 (Auth, Firestore. Storage 미사용 명시)
-- **doc/travel_mate.sql** — MariaDB 스키마 및 시드 데이터
+- **doc/travel_mate.sql** — MariaDB 스키마 및 시드 데이터 (users PK=email, chat_rooms.createdByUserId, posts.content LONGTEXT 등)
 - **doc/trd.md** — 기술 요구사항 문서
 - **doc/prd.md** — 제품 요구사항 문서
+- **doc/firstvibe.json** — 초기 기획 QA 및 구현 요약
+- **doc/todo.yaml** — 작업 목록 및 구현 가이드
 
 ## 라이선스
 

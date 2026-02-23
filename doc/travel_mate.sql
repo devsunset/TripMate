@@ -106,7 +106,7 @@ COMMENT = '사용자 프로필과 태그의 N:M 매핑 테이블';
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `itineraries` (
   `id` INT NOT NULL AUTO_INCREMENT COMMENT '일정 고유 ID',
-  `authorId` INT NOT NULL COMMENT '작성자 (users.id)',
+  `authorId` VARCHAR(255) NOT NULL COMMENT '작성자 이메일 (users.email)',
   `title` VARCHAR(255) NOT NULL COMMENT '일정 제목',
   `description` TEXT NOT NULL COMMENT '일정 상세 설명',
   `startDate` DATE NOT NULL COMMENT '여행 시작일',
@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS `itineraries` (
   INDEX `idx_dates` (`startDate`, `endDate`) COMMENT '기간 검색을 위한 인덱스',
   CONSTRAINT `fk_itineraries_users`
     FOREIGN KEY (`authorId`)
-    REFERENCES `users` (`id`)
+    REFERENCES `users` (`email`)
     ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT = '사용자가 작성한 여행 일정의 기본 정보';
@@ -134,7 +134,7 @@ CREATE TABLE IF NOT EXISTS `posts` (
   `authorId` VARCHAR(255) NOT NULL COMMENT '작성자 이메일 (users.email)',
   `categoryId` INT NOT NULL COMMENT '카테고리 (post_categories.id)',
   `title` VARCHAR(255) NOT NULL COMMENT '게시글 제목',
-  `content` TEXT NOT NULL COMMENT '게시글 본문',
+  `content` LONGTEXT NOT NULL COMMENT '게시글 본문 (CLOB, 대용량 텍스트)',
   `imageUrls` JSON COMMENT '첨부 이미지 URL 목록 (백엔드 /api/upload/post 반환 URL 배열)',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '작성일',
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일',
@@ -200,7 +200,7 @@ COMMENT = '각 일차에 포함된 세부 활동 정보';
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `comments` (
   `id` INT NOT NULL AUTO_INCREMENT COMMENT '댓글 고유 ID',
-  `authorId` INT NOT NULL COMMENT '작성자 (users.id)',
+  `authorId` VARCHAR(255) NOT NULL COMMENT '작성자 이메일 (users.email)',
   `postId` INT COMMENT '관련 게시글 (posts.id)',
   `itineraryId` INT COMMENT '관련 일정 (itineraries.id)',
   `parentCommentId` INT COMMENT '부모 댓글 ID (대댓글용)',
@@ -214,7 +214,7 @@ CREATE TABLE IF NOT EXISTS `comments` (
   INDEX `idx_parentCommentId` (`parentCommentId`),
   CONSTRAINT `fk_comments_users`
     FOREIGN KEY (`authorId`)
-    REFERENCES `users` (`id`)
+    REFERENCES `users` (`email`)
     ON DELETE CASCADE,
   CONSTRAINT `fk_comments_posts`
     FOREIGN KEY (`postId`)
@@ -263,7 +263,7 @@ COMMENT = '사용자의 좋아요 정보 (게시글 또는 일정)';
 -- Table `bookmarks`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `bookmarks` (
-  `userId` INT NOT NULL COMMENT '사용자 (users.id)',
+  `userId` VARCHAR(255) NOT NULL COMMENT '사용자 이메일 (users.email)',
   `postId` INT COMMENT '게시글 (posts.id)',
   `itineraryId` INT COMMENT '일정 (itineraries.id)',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -272,7 +272,7 @@ CREATE TABLE IF NOT EXISTS `bookmarks` (
   INDEX `idx_itineraryId` (`itineraryId`),
   CONSTRAINT `fk_bookmarks_users`
     FOREIGN KEY (`userId`)
-    REFERENCES `users` (`id`)
+    REFERENCES `users` (`email`)
     ON DELETE CASCADE,
   CONSTRAINT `fk_bookmarks_posts`
     FOREIGN KEY (`postId`)
@@ -294,6 +294,7 @@ CREATE TABLE IF NOT EXISTS `chat_rooms` (
   `firestoreChatId` VARCHAR(255) NOT NULL UNIQUE COMMENT 'Firestore 채팅방 ID (두 사용자 이메일 정렬 후 _ 연결)',
   `user1Id` VARCHAR(255) NOT NULL COMMENT '참여자1 이메일 (users.email)',
   `user2Id` VARCHAR(255) NOT NULL COMMENT '참여자2 이메일 (users.email)',
+  `createdByUserId` VARCHAR(255) NULL COMMENT '채팅을 신청한 사용자 이메일 (user1Id 또는 user2Id)',
   `lastMessage` TEXT COMMENT '마지막 메시지 요약',
   `lastMessageSentAt` DATETIME COMMENT '마지막 메시지 전송 시간',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -308,9 +309,13 @@ CREATE TABLE IF NOT EXISTS `chat_rooms` (
   CONSTRAINT `fk_chat_rooms_user2`
     FOREIGN KEY (`user2Id`)
     REFERENCES `users` (`email`)
-    ON DELETE CASCADE
+    ON DELETE CASCADE,
+  CONSTRAINT `fk_chat_rooms_created_by`
+    FOREIGN KEY (`createdByUserId`)
+    REFERENCES `users` (`email`)
+    ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT = '1:1 채팅방 정보';
+COMMENT = '1:1 채팅방 정보. createdByUserId=채팅 신청자, 상대는 신청받은 쪽.';
 
 
 -- -----------------------------------------------------
@@ -318,8 +323,8 @@ COMMENT = '1:1 채팅방 정보';
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `private_messages` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `senderId` INT NOT NULL COMMENT '보내는 사람 (users.id)',
-  `receiverId` INT NOT NULL COMMENT '받는 사람 (users.id)',
+  `senderId` VARCHAR(255) NOT NULL COMMENT '보내는 사람 이메일 (users.email)',
+  `receiverId` VARCHAR(255) NOT NULL COMMENT '받는 사람 이메일 (users.email)',
   `content` TEXT NOT NULL COMMENT '쪽지 내용',
   `isRead` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '수신자 읽음 여부 (0: 안읽음, 1: 읽음)',
   `sent_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '전송 시간',
@@ -328,11 +333,11 @@ CREATE TABLE IF NOT EXISTS `private_messages` (
   INDEX `idx_receiverId_isRead_sent_at` (`receiverId`, `isRead`, `sent_at`) COMMENT '수신함 목록 조회 및 정렬용',
   CONSTRAINT `fk_private_messages_sender`
     FOREIGN KEY (`senderId`)
-    REFERENCES `users` (`id`)
+    REFERENCES `users` (`email`)
     ON DELETE CASCADE,
   CONSTRAINT `fk_private_messages_receiver`
     FOREIGN KEY (`receiverId`)
-    REFERENCES `users` (`id`)
+    REFERENCES `users` (`email`)
     ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT = '사용자 간 1:1 쪽지';

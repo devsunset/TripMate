@@ -7,6 +7,7 @@ const Itinerary = require('../models/itinerary');
 const ItineraryDay = require('../models/itineraryDay');
 const ItineraryActivity = require('../models/itineraryActivity');
 const User = require('../models/user');
+const { LIMITS, checkMaxLength } = require('../utils/fieldLimits');
 
 /** 일정 목록: 쿼리 search, limit, offset */
 exports.getAllItineraries = async (req, res, next) => {
@@ -86,6 +87,10 @@ exports.createItinerary = async (req, res, next) => {
     if (!title || !description || !startDate || !endDate) {
       return res.status(400).json({ message: '제목, 설명, 시작일, 종료일이 필요합니다.' });
     }
+    let e = checkMaxLength(title, LIMITS.itineraryTitle, '일정 제목');
+    if (e) return res.status(400).json({ message: e });
+    e = checkMaxLength(description, LIMITS.itineraryDescription, '일정 설명');
+    if (e) return res.status(400).json({ message: e });
 
     const author = await User.findOne({ where: { firebase_uid: authorFirebaseUid } });
     if (!author) {
@@ -112,11 +117,14 @@ exports.createItinerary = async (req, res, next) => {
 
         if (day.activities && day.activities.length > 0) {
           for (const activity of day.activities) {
+            const at = activity.time != null ? String(activity.time).slice(0, LIMITS.activityTime) : null;
+            const ad = activity.description != null ? String(activity.description).slice(0, LIMITS.activityDescription) : '';
+            const al = activity.location != null ? String(activity.location).slice(0, LIMITS.activityLocation) : null;
             await ItineraryActivity.create({
               itineraryDayId: itineraryDay.id,
-              time: activity.time,
-              description: activity.description,
-              location: activity.location,
+              time: at,
+              description: ad,
+              location: al,
               coordinates: activity.coordinates,
             });
           }
@@ -149,6 +157,15 @@ exports.updateItinerary = async (req, res, next) => {
     if (itinerary.Author.firebase_uid !== authorFirebaseUid) {
       return res.status(403).json({ message: '본인 일정만 수정할 수 있습니다.' });
     }
+    let e;
+    if (title != null) {
+      e = checkMaxLength(title, LIMITS.itineraryTitle, '일정 제목');
+      if (e) return res.status(400).json({ message: e });
+    }
+    if (description != null) {
+      e = checkMaxLength(description, LIMITS.itineraryDescription, '일정 설명');
+      if (e) return res.status(400).json({ message: e });
+    }
 
     await itinerary.update({
       title: title || itinerary.title,
@@ -175,11 +192,14 @@ exports.updateItinerary = async (req, res, next) => {
 
         if (day.activities && day.activities.length > 0) {
           for (const activity of day.activities) {
+            const at = activity.time != null ? String(activity.time).slice(0, LIMITS.activityTime) : null;
+            const ad = activity.description != null ? String(activity.description).slice(0, LIMITS.activityDescription) : '';
+            const al = activity.location != null ? String(activity.location).slice(0, LIMITS.activityLocation) : null;
             await ItineraryActivity.create({
               itineraryDayId: itineraryDay.id,
-              time: activity.time,
-              description: activity.description,
-              location: activity.location,
+              time: at,
+              description: ad,
+              location: al,
               coordinates: activity.coordinates,
             });
           }

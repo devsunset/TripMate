@@ -13,6 +13,7 @@ import 'package:travel_mate_app/app/constants.dart';
 import 'package:travel_mate_app/domain/entities/post.dart';
 import 'package:travel_mate_app/domain/usecases/get_post.dart';
 import 'package:travel_mate_app/domain/usecases/delete_post.dart';
+import 'package:travel_mate_app/domain/usecases/create_chat_room.dart';
 import 'package:travel_mate_app/presentation/common/report_button_widget.dart';
 import 'package:travel_mate_app/presentation/common/app_app_bar.dart';
 
@@ -160,8 +161,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentUserUid = FirebaseAuth.instance.currentUser?.uid;
-    final isAuthor = _post?.authorId == currentUserUid;
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final currentUserId = currentUser?.email ?? currentUser?.uid ?? '';
+    final isAuthor = _post != null && _post!.authorId == currentUserId;
 
     return Scaffold(
       appBar: AppAppBar(
@@ -179,8 +181,31 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               onPressed: _deletePost,
             ),
           ],
-          if (!isAuthor && _post != null) // Allow reporting only if not author
+          if (!isAuthor && _post != null) ...[
+            IconButton(
+              icon: const Icon(Icons.chat_bubble_outline_rounded),
+              tooltip: '작성자에게 채팅하기',
+              onPressed: () async {
+                try {
+                  final createChatRoom = Provider.of<CreateChatRoom>(context, listen: false);
+                  await createChatRoom.execute(_post!.authorId);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('채팅 요청이 완료되었습니다. 채팅 목록에서 대화를 이어가세요.')),
+                    );
+                    context.go('/chat');
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('채팅 요청에 실패했습니다. $e')),
+                    );
+                  }
+                }
+              },
+            ),
             ReportButtonWidget(entityType: ReportEntityType.post, entityId: widget.postId),
+          ],
         ],
       ),
       body: _isLoading

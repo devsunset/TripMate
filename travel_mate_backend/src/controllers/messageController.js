@@ -7,6 +7,7 @@ const PrivateMessage = require('../models/privateMessage');
 const User = require('../models/user');
 const UserProfile = require('../models/userProfile');
 const NotificationService = require('../services/notificationService');
+const { LIMITS, checkMaxLength } = require('../utils/fieldLimits');
 
 /** 쪽지 발송: DB 저장 후 수신자에게 FCM 푸시 발송 */
 exports.sendPrivateMessage = async (req, res, next) => {
@@ -17,6 +18,8 @@ exports.sendPrivateMessage = async (req, res, next) => {
     if (!receiverId || !content) {
       return res.status(400).json({ message: '수신자 ID와 내용이 필요합니다.' });
     }
+    const contentErr = checkMaxLength(content, LIMITS.messageContent, '쪽지 내용');
+    if (contentErr) return res.status(400).json({ message: contentErr });
 
     const sender = await User.findOne({ where: { firebase_uid: senderFirebaseUid } });
     const receiver = await User.findOne({ where: { email: receiverId } });

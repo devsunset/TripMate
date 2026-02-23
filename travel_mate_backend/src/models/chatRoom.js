@@ -31,6 +31,13 @@ const ChatRoom = sequelize.define('ChatRoom', {
     references: { model: User, key: 'email' },
     onDelete: 'CASCADE',
   },
+  createdByUserId: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+    references: { model: User, key: 'email' },
+    onDelete: 'SET NULL',
+    comment: '채팅을 신청한 사용자 이메일',
+  },
   lastMessage: {
     type: DataTypes.TEXT,
   },

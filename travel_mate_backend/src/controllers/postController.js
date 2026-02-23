@@ -6,6 +6,7 @@ const { Op } = require('sequelize');
 const Post = require('../models/post');
 const PostCategory = require('../models/postCategory');
 const User = require('../models/user');
+const { LIMITS, checkMaxLength } = require('../utils/fieldLimits');
 
 /** 게시글 목록: 쿼리 category, search, limit, offset */
 exports.getAllPosts = async (req, res, next) => {
@@ -82,6 +83,10 @@ exports.createPost = async (req, res, next) => {
     if (!title || !content || !category) {
       return res.status(400).json({ message: '제목, 내용, 카테고리가 필요합니다.' });
     }
+    let err = checkMaxLength(title, LIMITS.postTitle, '제목');
+    if (err) return res.status(400).json({ message: err });
+    err = checkMaxLength(content, LIMITS.postContent, '본문');
+    if (err) return res.status(400).json({ message: err });
 
     const author = await User.findOne({ where: { firebase_uid: authorFirebaseUid } });
     if (!author) {
@@ -125,6 +130,14 @@ exports.updatePost = async (req, res, next) => {
     // Authorization: Only the author can update their post
     if (post.Author.firebase_uid !== authorFirebaseUid) {
       return res.status(403).json({ message: '본인 게시글만 수정할 수 있습니다.' });
+    }
+    if (title != null) {
+      const err = checkMaxLength(title, LIMITS.postTitle, '제목');
+      if (err) return res.status(400).json({ message: err });
+    }
+    if (content != null) {
+      const err = checkMaxLength(content, LIMITS.postContent, '본문');
+      if (err) return res.status(400).json({ message: err });
     }
 
     let categoryId = post.categoryId;

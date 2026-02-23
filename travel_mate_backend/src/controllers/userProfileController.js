@@ -6,6 +6,7 @@
 const UserProfile = require('../models/userProfile');
 const User = require('../models/user');
 const { generateUniqueRandomNickname, isNicknameTakenByOther } = require('../utils/randomNickname');
+const { LIMITS, checkMaxLength, trimToMax } = require('../utils/fieldLimits');
 
 /** API 응답용: userProfile에 userId를 이메일로 덮어써서 반환 */
 function profileWithEmailId(userProfile, user) {
@@ -74,6 +75,26 @@ exports.updateUserProfile = async (req, res, next) => {
 
     if (!userEmail || req.user?.email !== userEmail) {
       return res.status(403).json({ message: '본인 프로필만 수정할 수 있습니다.' });
+    }
+    if (nickname != null && String(nickname).trim() !== '') {
+      const e = checkMaxLength(nickname.trim(), LIMITS.nickname, '닉네임');
+      if (e) return res.status(400).json({ message: e });
+    }
+    if (profileImageUrl != null) {
+      const e = checkMaxLength(profileImageUrl, LIMITS.profileImageUrl, '프로필 이미지 URL');
+      if (e) return res.status(400).json({ message: e });
+    }
+    if (gender != null) {
+      const e = checkMaxLength(gender, LIMITS.gender, '성별');
+      if (e) return res.status(400).json({ message: e });
+    }
+    if (ageRange != null) {
+      const e = checkMaxLength(ageRange, LIMITS.ageRange, '연령대');
+      if (e) return res.status(400).json({ message: e });
+    }
+    if (bio != null) {
+      const e = checkMaxLength(bio, LIMITS.bio, '자기소개');
+      if (e) return res.status(400).json({ message: e });
     }
 
     const user = await User.findOne({ where: { email: userEmail } });

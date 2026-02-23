@@ -7,6 +7,7 @@ const User = require('../models/user');
 const Post = require('../models/post');
 const Itinerary = require('../models/itinerary');
 const NotificationService = require('../services/notificationService');
+const { LIMITS, checkMaxLength } = require('../utils/fieldLimits');
 
 /** 댓글 목록: 쿼리 postId 또는 itineraryId, 최상위 댓글+대댓글 포함 */
 exports.getComments = async (req, res, next) => {
@@ -52,6 +53,8 @@ exports.addComment = async (req, res, next) => {
     if (!content) {
       return res.status(400).json({ message: '댓글 내용이 필요합니다.' });
     }
+    const contentErr = checkMaxLength(content, LIMITS.commentContent, '댓글 내용');
+    if (contentErr) return res.status(400).json({ message: contentErr });
     if (!postId && !itineraryId) {
       return res.status(400).json({ message: 'postId 또는 itineraryId가 필요합니다.' });
     }
@@ -130,6 +133,8 @@ exports.updateComment = async (req, res, next) => {
     if (!content) {
       return res.status(400).json({ message: '댓글 내용이 필요합니다.' });
     }
+    const contentErr = checkMaxLength(content, LIMITS.commentContent, '댓글 내용');
+    if (contentErr) return res.status(400).json({ message: contentErr });
 
     const comment = await Comment.findByPk(commentId, {
       include: [{ model: User, as: 'Author' }],

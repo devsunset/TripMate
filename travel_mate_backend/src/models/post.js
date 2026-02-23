@@ -31,7 +31,7 @@ const Post = sequelize.define('Post', {
     allowNull: false,
   },
   content: {
-    type: DataTypes.TEXT,
+    type: DataTypes.TEXT('long'), // LONGTEXT (CLOB, 대용량 본문)
     allowNull: false,
   },
   imageUrls: {

@@ -17,6 +17,7 @@ import 'package:travel_mate_app/core/services/fcm_service.dart';
 import 'package:travel_mate_app/data/datasources/profile_remote_datasource.dart';
 import 'package:travel_mate_app/data/datasources/message_remote_datasource.dart';
 import 'package:travel_mate_app/data/datasources/chat_remote_datasource.dart';
+import 'package:travel_mate_app/data/datasources/chat_api_datasource.dart';
 import 'package:travel_mate_app/data/datasources/post_remote_datasource.dart';
 import 'package:travel_mate_app/data/datasources/itinerary_remote_datasource.dart';
 import 'package:travel_mate_app/data/repositories/user_profile_repository_impl.dart';
@@ -42,6 +43,7 @@ import 'package:travel_mate_app/domain/usecases/get_tags.dart';
 import 'package:travel_mate_app/domain/usecases/send_private_message.dart';
 import 'package:travel_mate_app/domain/usecases/get_chat_messages.dart';
 import 'package:travel_mate_app/domain/usecases/get_chat_rooms.dart';
+import 'package:travel_mate_app/domain/usecases/create_chat_room.dart';
 import 'package:travel_mate_app/domain/usecases/send_chat_message.dart';
 import 'package:travel_mate_app/domain/usecases/get_posts.dart';
 import 'package:travel_mate_app/domain/usecases/get_post.dart';
@@ -139,6 +141,12 @@ void main() async {
             firebaseAuth: FirebaseAuth.instance,
           ),
         ),
+        Provider<ChatApiDataSource>(
+          create: (context) => ChatApiDataSource(
+            firebaseAuth: FirebaseAuth.instance,
+            dio: context.read<Dio>(),
+          ),
+        ),
         Provider<PostRemoteDataSource>(create: (context) => PostRemoteDataSource(dio: context.read<Dio>())),
         Provider<ItineraryRemoteDataSource>(create: (context) => ItineraryRemoteDataSource(dio: context.read<Dio>())),
         Provider<CompanionSearchRemoteDataSource>(
@@ -154,7 +162,10 @@ void main() async {
           create: (context) => MessageRepositoryImpl(remoteDataSource: context.read<MessageRemoteDataSource>()),
         ),
         Provider<ChatRepository>(
-          create: (context) => ChatRepositoryImpl(remoteDataSource: context.read<ChatRemoteDataSource>()),
+          create: (context) => ChatRepositoryImpl(
+            remoteDataSource: context.read<ChatRemoteDataSource>(),
+            apiDataSource: context.read<ChatApiDataSource>(),
+          ),
         ),
         Provider<PostRepository>(
           create: (context) => PostRepositoryImpl(remoteDataSource: context.read<PostRemoteDataSource>()),
@@ -175,6 +186,7 @@ void main() async {
         Provider<SendPrivateMessage>(create: (context) => SendPrivateMessage(context.read<MessageRepository>())),
         Provider<GetChatMessages>(create: (context) => GetChatMessages(context.read<ChatRepository>())),
         Provider<GetChatRooms>(create: (context) => GetChatRooms(context.read<ChatRepository>())),
+        Provider<CreateChatRoom>(create: (context) => CreateChatRoom(context.read<ChatRepository>())),
         Provider<SendChatMessage>(create: (context) => SendChatMessage(context.read<ChatRepository>())),
         Provider<GetPosts>(create: (context) => GetPosts(context.read<PostRepository>())),
         Provider<GetPost>(create: (context) => GetPost(context.read<PostRepository>())),

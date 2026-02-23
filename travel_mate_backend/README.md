@@ -1,6 +1,6 @@
 # TravelMate Backend
 
-TripMate(트래블 메이트) Node.js API 서버. 사용자·프로필, 게시글, 일정, 댓글, 좋아요/북마크, 쪽지, FCM 토큰 등 REST API 제공. **이미지 파일은 multer로 수신하여 서버 `uploads/` 디렉터리에 저장**합니다 (Firebase Storage 미사용).
+TripMate(트래블 메이트) Node.js API 서버. 사용자 식별자는 이메일(users PK=email). 사용자·프로필, 게시글, 일정, 댓글, 좋아요/북마크, 쪽지, 채팅방, FCM 토큰 등 REST API 제공. **이미지 파일은 multer로 수신하여 서버 `uploads/` 디렉터리에 저장**합니다 (Firebase Storage 미사용).
 
 ## 기술 스택
 
@@ -38,9 +38,10 @@ node src/app.js
 ## API 개요
 
 - **인증**: `POST /api/auth/register`, `POST /api/auth/login` (Firebase ID 토큰 사용)
-- **사용자/프로필**: `GET/PATCH /api/users/:userId/profile`, `POST /api/users/:userId/profile/image`
+- **사용자/프로필**: `GET/PATCH /api/users/:userId/profile` (userId=이메일), `POST /api/users/:userId/profile/image`
 - **이미지 업로드**: 아래 참고
-- **게시글**: `GET/POST /api/posts`, `GET/PATCH/DELETE /api/posts/:id`
+- **채팅**: `GET /api/chat/rooms` (내 채팅방 목록, 신청한/신청받은 구분), `POST /api/chat/room` (채팅 요청, body: `{ partnerId: 이메일 }`)
+- **게시글**: `GET/POST /api/posts`, `GET/PATCH/DELETE /api/posts/:id` (authorId=이메일)
 - **일정**: `GET/POST /api/itineraries`, `GET/PATCH/DELETE /api/itineraries/:id`
 - **댓글, 좋아요, 북마크, 쪽지, FCM 토큰, 신고 등**: 각각 `/api/comments`, `/api/interactions`, `/api/messages`, `/api/fcm`, `/api/reports` 등
 
