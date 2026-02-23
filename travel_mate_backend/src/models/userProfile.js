@@ -65,11 +65,7 @@ const UserProfile = sequelize.define('UserProfile', {
   timestamps: true,
   createdAt: 'created_at',
   updatedAt: 'updated_at',
-  indexes: [
-    { fields: ['gender'] },
-    { fields: ['ageRange'] },
-    { fields: ['gender', 'ageRange'] },
-  ],
+  // 인덱스는 doc/travel_mate.sql의 idx_gender_ageRange로 생성. sync() 시 ADD INDEX가 기존 CHECK(JSON)와 충돌해 에러나므로 여기서는 정의하지 않음.
 });
 
 User.hasOne(UserProfile, { foreignKey: 'userId', onDelete: 'CASCADE' });
