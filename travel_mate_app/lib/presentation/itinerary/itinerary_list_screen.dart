@@ -11,9 +11,7 @@ import 'package:travel_mate_app/presentation/common/empty_state_widget.dart';
 
 /// 일정 목록 화면. 일정 생성·상세 이동.
 class ItineraryListScreen extends StatefulWidget {
-  final String backgroundImageUrl;
-
-  const ItineraryListScreen({Key? key, required this.backgroundImageUrl}) : super(key: key);
+  const ItineraryListScreen({Key? key}) : super(key: key);
 
   @override
   State<ItineraryListScreen> createState() => _ItineraryListScreenState();
@@ -68,32 +66,7 @@ class _ItineraryListScreenState extends State<ItineraryListScreen> {
           ),
         ],
       ),
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Positioned.fill(
-            child: Image.network(
-              widget.backgroundImageUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => const ColoredBox(color: Color(0xFF1E1E32)),
-            ),
-          ),
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    const Color(0xFF1E1E32).withOpacity(0.25),
-                    const Color(0xFF1E1E32).withOpacity(0.45),
-                    const Color(0xFF1E1E32).withOpacity(0.65),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          _isLoading
+      body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _isEmpty
               ? EmptyStateWidget(
@@ -144,8 +117,6 @@ class _ItineraryListScreenState extends State<ItineraryListScreen> {
                     },
                   ),
                 ),
-        ],
-      ),
     );
   }
 }

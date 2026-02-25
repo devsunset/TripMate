@@ -11,9 +11,7 @@ import 'package:travel_mate_app/presentation/common/empty_state_widget.dart';
 
 /// 동행 검색 화면. 목적지·성별·연령 등 필터로 프로필 검색.
 class CompanionSearchScreen extends StatefulWidget {
-  final String backgroundImageUrl;
-
-  const CompanionSearchScreen({Key? key, required this.backgroundImageUrl}) : super(key: key);
+  const CompanionSearchScreen({Key? key}) : super(key: key);
 
   @override
   State<CompanionSearchScreen> createState() => _CompanionSearchScreenState();
@@ -121,32 +119,7 @@ class _CompanionSearchScreenState extends State<CompanionSearchScreen> {
           ),
         ],
       ),
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Positioned.fill(
-            child: Image.network(
-              widget.backgroundImageUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => const ColoredBox(color: Color(0xFF1E1E32)),
-            ),
-          ),
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    const Color(0xFF1E1E32).withOpacity(0.25),
-                    const Color(0xFF1E1E32).withOpacity(0.45),
-                    const Color(0xFF1E1E32).withOpacity(0.65),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Column(
+      body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(AppConstants.paddingMedium),
