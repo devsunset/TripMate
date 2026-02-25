@@ -107,7 +107,7 @@ class _ItineraryListScreenState extends State<ItineraryListScreen> {
                                   child: Icon(Icons.travel_explore),
                                 ),
                           title: Text(itinerary.title),
-                          subtitle: Text('${itinerary.startDate.toLocal().toString().split(' ')[0]} ~ ${itinerary.endDate.toLocal().toString().split(' ')[0]}'),
+                          subtitle: Text('${itinerary.startDate.toLocal().toString().split(' ')[0]} ~ ${itinerary.endDate.toLocal().toString().split(' ')[0]}${itinerary.authorNickname != null ? ' · ${itinerary.authorNickname}' : ''}'),
                           trailing: const Icon(Icons.arrow_forward_ios),
                           onTap: () {
                             context.go('/itinerary/${itinerary.id}'); // Navigate to itinerary detail

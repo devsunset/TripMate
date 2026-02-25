@@ -74,12 +74,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     final currentUserId = _currentUserId ?? '';
     final isMyProfile = currentUserId == widget.userId;
 
-    // 메인 화면 카드와 동일한 밝은 톤 색상 (티얼, 스카이, 앰버, 에메랄드)
+    // 소개·여행 스타일·관심사만 표시 (선호 지역은 입력 UI 없어 제외)
     const sectionColors = [
       Color(0xFF0EA5E9), // Sky - 소개
       Color(0xFF14B8A6), // Teal - 여행 스타일
       Color(0xFFF59E0B), // Amber - 관심사
-      Color(0xFF10B981), // Emerald - 선호 지역
     ];
 
     return Scaffold(
@@ -197,8 +196,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           _buildSection(title: '여행 스타일', content: _userProfile?.travelStyles.join(', ') ?? '선택된 여행 스타일이 없습니다.', icon: Icons.explore_rounded, color: sectionColors[1]),
                           const SizedBox(height: 14),
                           _buildSection(title: '관심사', content: _userProfile?.interests.join(', ') ?? '선택된 관심사가 없습니다.', icon: Icons.favorite_outline_rounded, color: sectionColors[2]),
-                          const SizedBox(height: 14),
-                          _buildSection(title: '선호 지역', content: _userProfile?.preferredDestinations.join(', ') ?? '선택된 선호 지역이 없습니다.', icon: Icons.place_rounded, color: sectionColors[3]),
                           if (isMyProfile) ...[
                             const SizedBox(height: 28),
                             _buildSettingsRow(context),

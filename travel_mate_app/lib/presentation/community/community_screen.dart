@@ -109,7 +109,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
                                   child: Icon(Icons.image_not_supported),
                                 ),
                           title: Text(post.title),
-                          subtitle: Text('${post.category} · ${post.authorId}'),
+                          subtitle: Text('${post.category} · ${post.authorNickname ?? post.authorId}'),
                           trailing: const Icon(Icons.arrow_forward_ios),
                           onTap: () {
                             context.go('/community/post/${post.id}'); // Navigate to post detail

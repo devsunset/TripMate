@@ -6,6 +6,7 @@ class ItineraryModel extends Itinerary {
   const ItineraryModel({
     required super.id,
     required super.authorId,
+    super.authorNickname,
     required super.title,
     required super.description,
     required super.startDate,
@@ -39,10 +40,21 @@ class ItineraryModel extends Itinerary {
     }).toList();
   }
 
+  static String? _authorNicknameFromJson(Map<String, dynamic>? json) {
+    if (json == null) return null;
+    final author = json['Author'] as Map<String, dynamic>? ?? json['author'] as Map<String, dynamic>?;
+    if (author == null) return null;
+    final profile = author['UserProfile'] as Map<String, dynamic>? ?? author['userProfile'] as Map<String, dynamic>?;
+    final nick = profile?['nickname'];
+    return nick == null ? null : nick.toString();
+  }
+
   factory ItineraryModel.fromJson(Map<String, dynamic> json) {
+    final authorId = _toString(json['authorId'] ?? (json['Author'] is Map ? (json['Author'] as Map)['id'] : null));
     return ItineraryModel(
       id: _toString(json['id']),
-      authorId: _toString(json['authorId']),
+      authorId: authorId,
+      authorNickname: _authorNicknameFromJson(json),
       title: _toString(json['title']),
       description: _toString(json['description']),
       startDate: _toDateTime(json['startDate']),
@@ -72,6 +84,7 @@ class ItineraryModel extends Itinerary {
   ItineraryModel copyWith({
     String? id,
     String? authorId,
+    String? authorNickname,
     String? title,
     String? description,
     DateTime? startDate,
@@ -84,6 +97,7 @@ class ItineraryModel extends Itinerary {
     return ItineraryModel(
       id: id ?? this.id,
       authorId: authorId ?? this.authorId,
+      authorNickname: authorNickname ?? this.authorNickname,
       title: title ?? this.title,
       description: description ?? this.description,
       startDate: startDate ?? this.startDate,

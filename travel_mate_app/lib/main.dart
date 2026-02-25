@@ -20,6 +20,7 @@ import 'package:travel_mate_app/data/datasources/chat_remote_datasource.dart';
 import 'package:travel_mate_app/data/datasources/chat_api_datasource.dart';
 import 'package:travel_mate_app/data/datasources/post_remote_datasource.dart';
 import 'package:travel_mate_app/data/datasources/itinerary_remote_datasource.dart';
+import 'package:travel_mate_app/data/datasources/comment_remote_datasource.dart';
 import 'package:travel_mate_app/data/repositories/user_profile_repository_impl.dart';
 import 'package:travel_mate_app/data/repositories/tag_repository_impl.dart';
 import 'package:travel_mate_app/data/repositories/message_repository_impl.dart';
@@ -27,6 +28,7 @@ import 'package:travel_mate_app/data/repositories/chat_repository_impl.dart';
 import 'package:travel_mate_app/data/repositories/post_repository_impl.dart';
 import 'package:travel_mate_app/data/repositories/itinerary_repository_impl.dart';
 import 'package:travel_mate_app/data/repositories/companion_repository_impl.dart';
+import 'package:travel_mate_app/data/repositories/comment_repository_impl.dart';
 import 'package:travel_mate_app/data/datasources/companion_search_remote_datasource.dart';
 import 'package:travel_mate_app/domain/repositories/user_profile_repository.dart';
 import 'package:travel_mate_app/domain/repositories/companion_repository.dart';
@@ -35,6 +37,7 @@ import 'package:travel_mate_app/domain/repositories/message_repository.dart';
 import 'package:travel_mate_app/domain/repositories/chat_repository.dart';
 import 'package:travel_mate_app/domain/repositories/post_repository.dart';
 import 'package:travel_mate_app/domain/repositories/itinerary_repository.dart';
+import 'package:travel_mate_app/domain/repositories/comment_repository.dart';
 import 'package:travel_mate_app/domain/usecases/get_user_profile.dart';
 import 'package:travel_mate_app/domain/usecases/create_user_profile.dart';
 import 'package:travel_mate_app/domain/usecases/update_user_profile.dart';
@@ -59,6 +62,9 @@ import 'package:travel_mate_app/domain/usecases/update_itinerary.dart';
 import 'package:travel_mate_app/domain/usecases/delete_itinerary.dart';
 import 'package:travel_mate_app/domain/usecases/upload_itinerary_image.dart';
 import 'package:travel_mate_app/domain/usecases/search_companions_usecase.dart';
+import 'package:travel_mate_app/domain/usecases/get_comments.dart';
+import 'package:travel_mate_app/domain/usecases/add_comment.dart';
+import 'package:travel_mate_app/domain/usecases/delete_comment.dart';
 
 /// 앱 진입점: Firebase 초기화 후 FCM 백그라운드 핸들러 등록, Provider 트리 구성 후 runApp.
 void main() async {
@@ -153,6 +159,7 @@ void main() async {
         Provider<CompanionSearchRemoteDataSource>(
           create: (context) => CompanionSearchRemoteDataSource(dio: context.read<Dio>()),
         ),
+        Provider<CommentRemoteDataSource>(create: (context) => CommentRemoteDataSource(dio: context.read<Dio>())),
 
         // Repository Providers
         Provider<UserProfileRepository>(
@@ -176,6 +183,9 @@ void main() async {
         ),
         Provider<CompanionRepository>(
           create: (context) => CompanionRepositoryImpl(remoteDataSource: context.read<CompanionSearchRemoteDataSource>()),
+        ),
+        Provider<CommentRepository>(
+          create: (context) => CommentRepositoryImpl(remoteDataSource: context.read<CommentRemoteDataSource>()),
         ),
 
         // UseCase Providers
@@ -203,6 +213,9 @@ void main() async {
         Provider<DeleteItinerary>(create: (context) => DeleteItinerary(context.read<ItineraryRepository>())),
         Provider<UploadItineraryImage>(create: (context) => UploadItineraryImage(context.read<ItineraryRepository>())),
         Provider<SearchCompanionsUsecase>(create: (context) => SearchCompanionsUsecase(context.read<CompanionRepository>())),
+        Provider<GetComments>(create: (context) => GetComments(context.read<CommentRepository>())),
+        Provider<AddComment>(create: (context) => AddComment(context.read<CommentRepository>())),
+        Provider<DeleteComment>(create: (context) => DeleteComment(context.read<CommentRepository>())),
       ],
       child: const FCMInitializer(child: TravelMateApp()),
     ),

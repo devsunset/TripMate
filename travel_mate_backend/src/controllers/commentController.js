@@ -4,6 +4,7 @@
  */
 const Comment = require('../models/comment');
 const User = require('../models/user');
+const UserProfile = require('../models/userProfile');
 const Post = require('../models/post');
 const Itinerary = require('../models/itinerary');
 const NotificationService = require('../services/notificationService');
@@ -24,16 +25,15 @@ exports.getComments = async (req, res, next) => {
       return res.status(400).json({ message: 'postId 또는 itineraryId가 필요합니다.' });
     }
 
+    const authorInclude = { model: User, as: 'Author', attributes: ['id'], include: [{ model: UserProfile, attributes: ['nickname'], required: false }] };
     const comments = await Comment.findAll({
       where: whereConditions,
       include: [
-        { model: User, as: 'Author', attributes: ['firebase_uid', 'id'] },
+        authorInclude,
         {
           model: Comment,
           as: 'Replies',
-          include: [
-            { model: User, as: 'Author', attributes: ['firebase_uid', 'id'] },
-          ],
+          include: [authorInclude],
         },
       ],
       order: [['created_at', 'ASC']],
@@ -65,12 +65,12 @@ exports.addComment = async (req, res, next) => {
       author = await User.create({ id: generateUserId(), firebase_uid: authorFirebaseUid });
     }
 
-    // Ensure content exists
+    // Ensure content exists (Author 포함해 FCM 수신자 조회용)
     let parentContent = null;
     if (postId) {
-      parentContent = await Post.findByPk(postId);
+      parentContent = await Post.findByPk(postId, { include: [{ model: User, as: 'Author', attributes: ['firebase_uid'] }] });
     } else if (itineraryId) {
-      parentContent = await Itinerary.findByPk(itineraryId);
+      parentContent = await Itinerary.findByPk(itineraryId, { include: [{ model: User, as: 'Author', attributes: ['firebase_uid'] }] });
     }
     if (!parentContent) {
       return res.status(404).json({ message: '대상 게시글 또는 일정을 찾을 수 없습니다.' });
@@ -93,12 +93,12 @@ exports.addComment = async (req, res, next) => {
       const parentComment = await Comment.findByPk(parentCommentId, {
         include: [{ model: User, as: 'Author' }],
       });
-      if (parentComment && parentComment.Author.firebase_uid !== authorFirebaseUid) {
+      if (parentComment && parentComment.Author?.firebase_uid && parentComment.Author.firebase_uid !== authorFirebaseUid) {
         receiverFirebaseUid = parentComment.Author.firebase_uid;
         notificationTitle = `New reply from user`; // TODO: Use author nickname
         notificationBody = content;
       }
-    } else if (parentContent.Author.firebase_uid !== authorFirebaseUid) { // New comment on a post/itinerary
+    } else if (parentContent.Author && parentContent.Author.firebase_uid !== authorFirebaseUid) { // New comment on a post/itinerary
       receiverFirebaseUid = parentContent.Author.firebase_uid;
       notificationTitle = `New comment on your ${postId ? 'post' : 'itinerary'}`; // TODO: Use author nickname
       notificationBody = content;
@@ -118,7 +118,9 @@ exports.addComment = async (req, res, next) => {
       });
     }
 
-    res.status(201).json({ message: '댓글이 등록되었습니다.', comment });
+    const authorInclude = { model: User, as: 'Author', attributes: ['id'], include: [{ model: UserProfile, attributes: ['nickname'], required: false }] };
+    const withAuthor = await Comment.findByPk(comment.id, { include: [authorInclude] });
+    res.status(201).json({ message: '댓글이 등록되었습니다.', comment: withAuthor || comment });
   } catch (error) {
     console.error('Error in addComment:', error);
     next(error);
@@ -172,8 +174,8 @@ exports.deleteComment = async (req, res, next) => {
       return res.status(404).json({ message: '댓글을 찾을 수 없습니다.' });
     }
 
-    // Authorization: Only the author can delete their comment
-    if (comment.Author.firebase_uid !== authorFirebaseUid) {
+    // Authorization: Only the author can delete their comment (로그인한 본인만 삭제 가능)
+    if (!comment.Author || comment.Author.firebase_uid !== authorFirebaseUid) {
       return res.status(403).json({ message: '본인 댓글만 삭제할 수 있습니다.' });
     }
 

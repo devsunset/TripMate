@@ -255,14 +255,17 @@ COMMENT = '게시글 또는 일정에 대한 댓글 및 대댓글';
 
 
 -- -----------------------------------------------------
--- Table `likes`
+-- Table `likes` (대리 키 id + 유니크로 post만/일정만 좋아요 시 NULL 삽입 가능)
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `likes` (
+  `id` INT NOT NULL AUTO_INCREMENT COMMENT '좋아요 고유 ID (Primary Key)',
   `userId` VARCHAR(32) NOT NULL COMMENT '사용자 ID (users.id)',
   `postId` INT COMMENT '게시글 (posts.id)',
   `itineraryId` INT COMMENT '일정 (itineraries.id)',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`userId`, `postId`, `itineraryId`),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_likes_user_post` (`userId`, `postId`),
+  UNIQUE KEY `uq_likes_user_itinerary` (`userId`, `itineraryId`),
   INDEX `idx_postId` (`postId`),
   INDEX `idx_itineraryId` (`itineraryId`),
   CONSTRAINT `fk_likes_users`
@@ -282,14 +285,17 @@ COMMENT = '사용자의 좋아요 정보 (게시글 또는 일정)';
 
 
 -- -----------------------------------------------------
--- Table `bookmarks`
+-- Table `bookmarks` (대리 키 id + 유니크로 post만/일정만 북마크 시 NULL 삽입 가능)
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `bookmarks` (
+  `id` INT NOT NULL AUTO_INCREMENT COMMENT '북마크 고유 ID (Primary Key)',
   `userId` VARCHAR(32) NOT NULL COMMENT '사용자 ID (users.id)',
   `postId` INT COMMENT '게시글 (posts.id)',
   `itineraryId` INT COMMENT '일정 (itineraries.id)',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`userId`, `postId`, `itineraryId`),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_bookmarks_user_post` (`userId`, `postId`),
+  UNIQUE KEY `uq_bookmarks_user_itinerary` (`userId`, `itineraryId`),
   INDEX `idx_postId` (`postId`),
   INDEX `idx_itineraryId` (`itineraryId`),
   CONSTRAINT `fk_bookmarks_users`

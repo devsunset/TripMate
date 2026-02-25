@@ -16,6 +16,7 @@ import 'package:travel_mate_app/domain/usecases/delete_post.dart';
 import 'package:travel_mate_app/domain/usecases/create_chat_room.dart';
 import 'package:travel_mate_app/presentation/common/report_button_widget.dart';
 import 'package:travel_mate_app/presentation/common/app_app_bar.dart';
+import 'package:travel_mate_app/presentation/common/comment_section_widget.dart';
 
 /// 게시글 상세 화면. 수정/삭제/신고 버튼.
 class PostDetailScreen extends StatefulWidget {
@@ -241,7 +242,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           ),
                           const SizedBox(height: AppConstants.spacingSmall),
                           Text(
-                            'Category: ${_post!.category} - Posted by ${_post!.authorId}', // TODO: Display author's nickname
+                            '${_post!.category} · 작성자 ${_post!.authorNickname ?? _post!.authorId}'
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
                           ),
                           const SizedBox(height: AppConstants.spacingMedium),
@@ -290,12 +291,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               style: Theme.of(context).textTheme.bodyLarge,
                             ),
                           const SizedBox(height: AppConstants.spacingLarge),
-                          Text(
-                            'Comments (Placeholder)',
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                          CommentSectionWidget(
+                            parentType: CommentParentType.post,
+                            parentId: widget.postId,
                           ),
-                          const SizedBox(height: AppConstants.spacingMedium),
-                          Text('아직 댓글이 없습니다.', style: Theme.of(context).textTheme.bodyMedium),
                         ],
                       ),
                     ),

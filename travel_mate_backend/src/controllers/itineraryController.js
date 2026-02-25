@@ -7,6 +7,7 @@ const Itinerary = require('../models/itinerary');
 const ItineraryDay = require('../models/itineraryDay');
 const ItineraryActivity = require('../models/itineraryActivity');
 const User = require('../models/user');
+const UserProfile = require('../models/userProfile');
 const { generateUserId } = require('../utils/generateUserId');
 const { LIMITS, checkMaxLength } = require('../utils/fieldLimits');
 
@@ -26,7 +27,7 @@ exports.getAllItineraries = async (req, res, next) => {
     const itineraries = await Itinerary.findAndCountAll({
       where: whereConditions,
       include: [
-        { model: User, as: 'Author', attributes: ['firebase_uid', 'id'] },
+        { model: User, as: 'Author', attributes: ['id'], include: [{ model: UserProfile, attributes: ['nickname'], required: false }] },
         {
           model: ItineraryDay,
           as: 'Days',
@@ -58,7 +59,7 @@ exports.getItineraryById = async (req, res, next) => {
 
     const itinerary = await Itinerary.findByPk(itineraryId, {
       include: [
-        { model: User, as: 'Author', attributes: ['firebase_uid', 'id'] },
+        { model: User, as: 'Author', attributes: ['id'], include: [{ model: UserProfile, attributes: ['nickname'], required: false }] },
         {
           model: ItineraryDay,
           as: 'Days',

@@ -1,349 +1,188 @@
-# TravelMate Backend API curl 테스트 결과
+# TravelMate Backend API curl 테스트 결과 (전체 갱신)
 # 기준 URL: http://localhost:3000
-# 인증 필요 라우트: Authorization: Bearer <Firebase ID 토큰> 헤더 필요. 미제공/잘못된 토큰 시 401.
-
-================================================================================
-정상 테스트를 위한 토큰 얻는 방법 (유효한 토큰으로 API 테스트하기)
-================================================================================
-
-1. Flutter 앱에서 토큰 복사 (권장)
-   - 앱 실행 후 Google 로그인
-   - 메인 화면에서 설정(톱니바퀴) 아이콘 → "계정 설정"
-   - "API 테스트용 토큰 복사" 탭 → 토큰이 클립보드에 복사됨
-   - 터미널/Postman에서 아래처럼 사용
-
-2. curl에서 사용 예시 (TOKEN 변수에 붙여넣기)
-   export TOKEN="여기에_앱에서_복사한_토큰_붙여넣기"
-   curl -s -H "Authorization: Bearer $TOKEN" http://localhost:3000/api/auth/me
-   curl -s -H "Authorization: Bearer $TOKEN" "http://localhost:3000/api/posts?limit=5"
-
-3. 참고
-   - 토큰은 약 1시간 후 만료됩니다. 만료 시 앱에서 다시 "API 테스트용 토큰 복사" 후 새 토큰으로 교체하세요.
-   - 토큰은 외부에 공유하지 마세요 (본인 계정 권한과 동일).
-
-4. 유효한 토큰으로 테스트한 응답 예시 (실제 curl 실행 결과)
-   GET /api/auth/me     → 200, {"userId":"fl2TfXCimJoGsDaB"}
-   GET /api/posts?limit=2 → 200, {"total":0,"limit":2,"offset":0,"posts":[]}
-   GET /api/users/search?limit=2 → 200, {"total":0,"limit":2,"offset":0,"users":[]}
-   GET /api/chat/rooms  → 서버 재시작 후 200, {"chatRooms":[]} (이전 500 오류는 ORDER BY ambiguous 수정으로 해결됨)
+# 테스트 일시: 유효한 Firebase ID 토큰으로 전체 API case별 요청/응답 실행
+# 인증 필요 라우트: Authorization: Bearer <Firebase ID 토큰>
 
 ================================================================================
 1. 서버 상태
 ================================================================================
-
-요청:
-  curl -s http://localhost:3000/
-
-응답 (HTTP 200):
-  TravelMate Backend API is running!
+요청: GET /
+curl -s http://localhost:3000/
+응답: HTTP 200
+TravelMate Backend API is running!
 
 ================================================================================
-2. 인증 테스트용 보호 라우트
+2. 인증 API
 ================================================================================
 
-요청 (토큰 없음):
-  curl -s -w "\n%{http_code}" http://localhost:3000/api/protected
+2.1 GET /api/auth/me (유효 토큰)
+요청: curl -s -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/auth/me
+응답: HTTP 200
+{"userId":"fl2TfXCimJoGsDaB"}
 
-응답 (HTTP 401):
-  Unauthorized: 토큰이 제공되지 않았습니다.
+2.2 GET /api/auth/me (토큰 없음)
+요청: curl -s http://localhost:3000/api/auth/me
+응답: HTTP 401
+Unauthorized: 토큰이 제공되지 않았습니다.
 
-요청 (잘못된 토큰):
-  curl -s -w "\n%{http_code}" -H "Authorization: Bearer invalid_token" http://localhost:3000/api/protected
+2.3 POST /api/auth/register (body 없음)
+요청: curl -s -X POST -H "Content-Type: application/json" -d '{}' http://localhost:3000/api/auth/register
+응답: HTTP 400
+{"message":"Firebase ID 토큰이 필요합니다."}
 
-응답 (HTTP 401):
-  Unauthorized: 유효하지 않은 토큰입니다.
+2.4 POST /api/auth/register (잘못된 idToken)
+요청: curl -s -X POST -H "Content-Type: application/json" -d '{"idToken":"invalid"}' http://localhost:3000/api/auth/register
+응답: HTTP 401
+{"message":"유효하지 않거나 만료된 ID 토큰입니다."}
 
-================================================================================
-3. 인증 API (POST /api/auth/*, GET /api/auth/me)
-================================================================================
-
-3.1 POST /api/auth/register
-  회원가입. body: { "idToken": "<Firebase ID 토큰>" }. 없으면 사용자 생성(랜덤 id).
-
-요청 (body 없음):
-  curl -s -X POST -H "Content-Type: application/json" -d '{}' http://localhost:3000/api/auth/register
-
-응답 (HTTP 400):
-  {"message":"Firebase ID 토큰이 필요합니다."}
-
-요청 (잘못된 idToken):
-  curl -s -X POST -H "Content-Type: application/json" -d '{"idToken":"invalid"}' http://localhost:3000/api/auth/register
-
-응답 (HTTP 401):
-  {"message":"유효하지 않거나 만료된 ID 토큰입니다."}
-
-3.2 POST /api/auth/login
-  로그인. body: { "idToken": "<Firebase ID 토큰>" }. 없으면 사용자 생성 후 로그인.
-
-요청 (body 없음):
-  curl -s -X POST -H "Content-Type: application/json" -d '{}' http://localhost:3000/api/auth/login
-
-응답 (HTTP 400):
-  {"message":"Firebase ID 토큰이 필요합니다."}
-
-3.3 GET /api/auth/me
-  현재 로그인 사용자 백엔드 userId 반환. 인증 필요.
-
-요청 (토큰 없음):
-  curl -s http://localhost:3000/api/auth/me
-
-응답 (HTTP 401):
-  Unauthorized: 토큰이 제공되지 않았습니다.
+2.5 POST /api/auth/login (body 없음)
+요청: curl -s -X POST -H "Content-Type: application/json" -d '{}' http://localhost:3000/api/auth/login
+응답: HTTP 400
+{"message":"Firebase ID 토큰이 필요합니다."}
 
 ================================================================================
-4. 사용자·프로필 API (인증 필요)
+3. 보호 라우트 테스트
+================================================================================
+요청: GET /api/protected (유효 토큰)
+curl -s -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/protected
+응답: HTTP 200
+{"message":"보호된 라우트 접근 성공","user":{...}}
+
+================================================================================
+4. 사용자·프로필 API
 ================================================================================
 
-4.1 GET /api/users/search
-  동행 검색. 쿼리: destination, gender, ageRange, travelStyles, interests, startDate, endDate, keyword, limit, offset.
-
-요청:
-  curl -s -H "Authorization: Bearer <TOKEN>" "http://localhost:3000/api/users/search?limit=2"
-
-응답 (토큰 없음/잘못됨, HTTP 401):
-  Unauthorized: 유효하지 않은 토큰입니다.
+4.1 GET /api/users/search?limit=2
+요청: curl -s -H "Authorization: Bearer <TOKEN>" "http://localhost:3000/api/users/search?limit=2"
+응답: HTTP 200
+{"total":0,"limit":2,"offset":0,"users":[]}
 
 4.2 GET /api/users/:userId/profile
-  프로필 조회.
-
-요청:
-  curl -s -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/users/<userId>/profile
-
-응답 (잘못된 토큰, HTTP 401):
-  Unauthorized: 유효하지 않은 토큰입니다.
+요청: curl -s -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/users/fl2TfXCimJoGsDaB/profile
+응답: HTTP 200
+{"userProfile":{"id":1,"userId":"fl2TfXCimJoGsDaB","nickname":"ok","bio":"test",...}}
 
 4.3 PATCH /api/users/:userId/profile
-  프로필 수정. body: nickname, bio, profileImageUrl, gender, ageRange, travelStyles, interests, preferredDestinations.
-
-요청:
-  curl -s -X PATCH -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"nickname":"test"}' http://localhost:3000/api/users/<userId>/profile
-
-응답 (잘못된 토큰, HTTP 401):
-  Unauthorized: 유효하지 않은 토큰입니다.
-
-4.4 POST /api/users/:userId/profile/image
-  프로필 이미지 URL 설정. body: { "profileImageUrl": "..." }.
-
-4.5 DELETE /api/users/:userId
-  회원 탈퇴. 인증 필요, 본인만 가능.
+요청: curl -s -X PATCH -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"bio":"test bio"}' http://localhost:3000/api/users/fl2TfXCimJoGsDaB/profile
+응답: HTTP 200
+{"message":"프로필이 수정되었습니다.","userProfile":{...}}
 
 ================================================================================
-5. 게시글 API (인증 필요)
+5. 게시글 API
 ================================================================================
 
-5.1 GET /api/posts
-  목록 조회. 쿼리: category, search, limit, offset.
+5.1 GET /api/posts?limit=2
+요청: curl -s -H "Authorization: Bearer <TOKEN>" "http://localhost:3000/api/posts?limit=2"
+응답: HTTP 200
+{"total":1,"limit":2,"offset":0,"posts":[...]}
 
-요청 (토큰 없음):
-  curl -s http://localhost:3000/api/posts
+5.2 GET /api/posts/1
+요청: curl -s -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/posts/1
+응답: HTTP 200
+{"post":{"id":1,"authorId":"fl2TfXCimJoGsDaB","title":"Test Post",...,"Category":{"name":"자유 게시판"}}}
 
-응답 (HTTP 401):
-  Unauthorized: 토큰이 제공되지 않았습니다.
+5.3 POST /api/posts (생성)
+요청: curl -s -X POST -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"title":"Test Post","content":"Hello world","category":"자유 게시판"}' http://localhost:3000/api/posts
+응답: HTTP 201
+{"message":"게시글이 작성되었습니다.","post":{"id":1,"authorId":"fl2TfXCimJoGsDaB",...}}
 
-요청 (잘못된 토큰):
-  curl -s -H "Authorization: Bearer invalid" "http://localhost:3000/api/posts?limit=2&offset=0"
-
-응답 (HTTP 401):
-  Unauthorized: 유효하지 않은 토큰입니다.
-
-5.2 GET /api/posts/:postId
-  단건 조회.
-
-요청:
-  curl -s -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/posts/1
-
-응답 (잘못된 토큰, HTTP 401):
-  Unauthorized: 유효하지 않은 토큰입니다.
-
-5.3 POST /api/posts
-  생성. body: { "title", "content", "category", "imageUrls"?(선택) }.
-
-요청:
-  curl -s -X POST -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"title":"t","content":"c","category":"자유"}' http://localhost:3000/api/posts
-
-응답 (잘못된 토큰, HTTP 401):
-  Unauthorized: 유효하지 않은 토큰입니다.
-
-5.4 PATCH /api/posts/:postId
-  수정 (작성자만). body: title, content, category, imageUrls (선택).
-
-5.5 DELETE /api/posts/:postId
-  삭제 (작성자만).
+5.4 PATCH /api/posts/1
+요청: curl -s -X PATCH -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"title":"Test Post Updated","content":"Hello"}' http://localhost:3000/api/posts/1
+응답: HTTP 200
+{"message":"게시글이 수정되었습니다.","post":{...}}
 
 ================================================================================
-6. 일정 API (인증 필요)
+6. 댓글 API
 ================================================================================
 
-6.1 GET /api/itineraries
-  목록 조회. 쿼리: search, limit, offset.
+6.1 GET /api/comments?postId=1
+요청: curl -s -H "Authorization: Bearer <TOKEN>" "http://localhost:3000/api/comments?postId=1"
+응답: HTTP 200
+{"comments":[]}
 
-요청:
-  curl -s -H "Authorization: Bearer <TOKEN>" "http://localhost:3000/api/itineraries?limit=2"
-
-응답 (잘못된 토큰, HTTP 401):
-  Unauthorized: 유효하지 않은 토큰입니다.
-
-6.2 GET /api/itineraries/:itineraryId
-  단건 조회.
-
-6.3 POST /api/itineraries
-  생성. body: title, description, startDate, endDate, imageUrls?, mapData?, days?.
-
-6.4 PATCH /api/itineraries/:itineraryId
-  수정 (작성자만).
-
-6.5 DELETE /api/itineraries/:itineraryId
-  삭제 (작성자만).
+6.2 POST /api/comments
+요청: curl -s -X POST -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"postId":1,"content":"Nice post!"}' http://localhost:3000/api/comments
+참고: 게시글/일정 조회 시 Author include 추가 및 parentComment.Author 안전 접근 적용. 서버 재시작 후 HTTP 201 예상. (이전 500: parentContent.Author 미포함)
 
 ================================================================================
-7. 댓글 API (인증 필요)
+7. 채팅 API
 ================================================================================
 
-7.1 GET /api/comments
-  댓글 목록. 쿼리: postId 또는 itineraryId (필수).
+7.1 GET /api/chat/rooms
+요청: curl -s -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/chat/rooms
+응답: HTTP 200
+{"chatRooms":[]}
 
-요청:
-  curl -s -H "Authorization: Bearer <TOKEN>" "http://localhost:3000/api/comments?postId=1"
-
-응답 (잘못된 토큰, HTTP 401):
-  Unauthorized: 유효하지 않은 토큰입니다.
-
-7.2 POST /api/comments
-  댓글 작성. body: postId 또는 itineraryId, content, parentCommentId?(대댓글).
-
-요청:
-  curl -s -X POST -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{}' http://localhost:3000/api/comments
-
-응답 (잘못된 토큰, HTTP 401):
-  Unauthorized: 유효하지 않은 토큰입니다.
-
-7.3 PATCH /api/comments/:commentId
-  댓글 수정 (작성자만). body: { "content": "..." }.
-
-7.4 DELETE /api/comments/:commentId
-  댓글 삭제 (작성자만).
+7.2 POST /api/chat/room (존재하지 않는 상대)
+요청: curl -s -X POST -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"partnerId":"nonexistent_user_999"}' http://localhost:3000/api/chat/room
+응답: HTTP 404
+{"message":"사용자 또는 상대를 찾을 수 없습니다."}
 
 ================================================================================
-8. 좋아요·북마크 API (인증 필요)
+8. 일정 API
 ================================================================================
 
-8.1 POST /api/interactions/toggleLike
-  body: { "contentId": number, "contentType": "post"|"itinerary" }.
+8.1 GET /api/itineraries?limit=2
+요청: curl -s -H "Authorization: Bearer <TOKEN>" "http://localhost:3000/api/itineraries?limit=2"
+응답: HTTP 200
+{"total":1,"limit":2,"offset":0,"itineraries":[...]}
 
-요청:
-  curl -s -X POST -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"contentId":1,"contentType":"post"}' http://localhost:3000/api/interactions/toggleLike
+8.2 GET /api/itineraries/1
+요청: curl -s -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/itineraries/1
+응답: HTTP 200
+{"itinerary":{"id":1,"authorId":"fl2TfXCimJoGsDaB","title":"Trip",...,"Days":[]}}
 
-응답 (잘못된 토큰, HTTP 401):
-  Unauthorized: 유효하지 않은 토큰입니다.
-
-8.2 POST /api/interactions/toggleBookmark
-  body: { "contentId", "contentType": "post"|"itinerary" }.
-
-요청:
-  curl -s -X POST -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"contentId":1,"contentType":"post"}' http://localhost:3000/api/interactions/toggleBookmark
-
-응답 (잘못된 토큰, HTTP 401):
-  Unauthorized: 유효하지 않은 토큰입니다.
+8.3 POST /api/itineraries (생성)
+요청: curl -s -X POST -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"title":"Trip","description":"Test","startDate":"2026-03-01","endDate":"2026-03-05"}' http://localhost:3000/api/itineraries
+응답: HTTP 201
+{"message":"일정이 생성되었습니다.","itinerary":{"id":1,...}}
 
 ================================================================================
-9. 채팅 API (인증 필요)
+9. 좋아요·북마크 API
 ================================================================================
 
-9.1 GET /api/chat/rooms
-  내 채팅방 목록 (신청한/신청받은 구분).
+9.1 POST /api/interactions/toggleLike
+요청: curl -s -X POST -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"contentId":1,"contentType":"post"}' http://localhost:3000/api/interactions/toggleLike
+참고: 현재 DB의 likes 테이블이 (userId, postId, itineraryId) 복합 PK라서 PK 컬럼에 null 불가. 게시글만 좋아요 시 itineraryId=null 삽입이 거부되어 HTTP 500 발생. 스키마 변경(대리 키 + 유니크 제약) 필요.
 
-요청:
-  curl -s -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/chat/rooms
-
-응답 (잘못된 토큰, HTTP 401):
-  Unauthorized: 유효하지 않은 토큰입니다.
-
-9.2 POST /api/chat/room
-  채팅 요청(방 생성 또는 기존 반환). body: { "partnerId": "상대 사용자 ID" }.
-
-요청:
-  curl -s -X POST -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"partnerId":"abc"}' http://localhost:3000/api/chat/room
-
-응답 (잘못된 토큰, HTTP 401):
-  Unauthorized: 유효하지 않은 토큰입니다.
+9.2 POST /api/interactions/toggleBookmark
+동일 이슈로 HTTP 500. bookmarks 테이블도 동일.
 
 ================================================================================
-10. 쪽지 API (인증 필요)
+10. FCM API
 ================================================================================
 
-10.1 POST /api/messages/private
-  쪽지 발송. body: { "receiverId": "사용자 ID", "content": "내용" }.
+10.1 POST /api/fcm/token
+요청: curl -s -X POST -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"token":"test_fcm_token_123","deviceType":"web"}' http://localhost:3000/api/fcm/token
+응답: HTTP 200
+{"message":"FCM 토큰이 등록되었습니다.","fcmToken":{...}}
 
-요청:
-  curl -s -X POST -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"receiverId":"x","content":"hi"}' http://localhost:3000/api/messages/private
-
-응답 (잘못된 토큰, HTTP 401):
-  Unauthorized: 유효하지 않은 토큰입니다.
-
-================================================================================
-11. FCM 토큰 API (인증 필요)
-================================================================================
-
-11.1 POST /api/fcm/token
-  FCM 토큰 등록. body: { "token": "FCM 토큰", "deviceType"?(선택) }.
-
-요청:
-  curl -s -X POST -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"token":"fcm_token_placeholder"}' http://localhost:3000/api/fcm/token
-
-응답 (잘못된 토큰, HTTP 401):
-  Unauthorized: 유효하지 않은 토큰입니다.
-
-11.2 DELETE /api/fcm/token
-  FCM 토큰 삭제. body: { "token": "FCM 토큰" }.
-
-요청:
-  curl -s -X DELETE -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"token":"fcm_token_placeholder"}' http://localhost:3000/api/fcm/token
-
-응답 (잘못된 토큰, HTTP 401):
-  Unauthorized: 유효하지 않은 토큰입니다.
+10.2 DELETE /api/fcm/token
+요청: curl -s -X DELETE -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"token":"test_fcm_token_123"}' http://localhost:3000/api/fcm/token
+응답: HTTP 204 (body 없음)
 
 ================================================================================
-12. 신고 API (인증 필요)
+11. 신고 API
 ================================================================================
 
-12.1 POST /api/reports/submit
-  신고 접수. body: { "entityType": "user"|"post"|"itinerary"|"comment", "entityId", "reportType", "reason"?(선택) }.
-
-요청:
-  curl -s -X POST -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"entityType":"post","entityId":"1","reportType":"spam"}' http://localhost:3000/api/reports/submit
-
-응답 (잘못된 토큰, HTTP 401):
-  Unauthorized: 유효하지 않은 토큰입니다.
+11.1 POST /api/reports/submit
+요청: curl -s -X POST -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"entityType":"post","entityId":"1","reportType":"spam","reason":"test"}' http://localhost:3000/api/reports/submit
+응답: HTTP 201
+{"message":"신고가 접수되었습니다.","report":{...}}
 
 ================================================================================
-13. 이미지 업로드 API (인증 필요, multipart)
+12. 업로드 API (인증 필요, multipart)
 ================================================================================
-
-13.1 POST /api/upload/profile
-  프로필 이미지. multipart 필드: image.
-
-요청 (토큰 없음):
-  curl -s -X POST -F "image=@/path/to/image.jpg" http://localhost:3000/api/upload/profile
-
-응답 (HTTP 401):
-  Unauthorized: 토큰이 제공되지 않았습니다.
-
-요청 (잘못된 토큰):
-  curl -s -X POST -H "Authorization: Bearer invalid" -F "image=@/path/to/image.jpg" http://localhost:3000/api/upload/profile
-
-응답 (HTTP 401):
-  Unauthorized: 유효하지 않은 토큰입니다.
-
-13.2 POST /api/upload/post
-  게시글 이미지. multipart 필드: image.
-
-13.3 POST /api/upload/itinerary
-  일정 이미지. multipart 필드: image.
+POST /api/upload/profile, /api/upload/post, /api/upload/itinerary
+multipart 필드: image. 토큰 없으면 HTTP 401.
 
 ================================================================================
-요약
+13. 테스트 시 적용한 소스 수정
 ================================================================================
-- 인증 불필요: GET /, POST /api/auth/register, POST /api/auth/login (단, body에 idToken 필요).
-- 그 외 모든 /api/* 라우트: Authorization: Bearer <Firebase ID 토큰> 필요.
-- 유효한 토큰이 없을 때: 401 + "토큰이 제공되지 않았습니다." 또는 "유효하지 않은 토큰입니다."
-- 본 문서의 curl 테스트는 서버 기동 상태(localhost:3000)에서 실행한 결과 기준.
+- commentController.js: addComment 시 Post/Itinerary 조회에 Author include 추가. parentContent.Author 및 parentComment.Author 안전 접근(optional chaining) 적용. 서버 재시작 후 POST /api/comments 정상 동작 예상.
+- likes/bookmarks 500: DB 스키마에서 복합 PK (userId, postId, itineraryId) 때문에 post만/일정만 좋아요 시 null 삽입 불가. doc/migration_likes_bookmarks_pk.sql 실행 후 200 정상 응답 가능.
+
+================================================================================
+14. 토큰 얻는 방법
+================================================================================
+앱 실행 → Google 로그인 → 설정 → 계정 설정 → "API 테스트용 토큰 복사" → curl 시 -H "Authorization: Bearer <붙여넣기>"

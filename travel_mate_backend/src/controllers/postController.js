@@ -6,6 +6,7 @@ const { Op } = require('sequelize');
 const Post = require('../models/post');
 const PostCategory = require('../models/postCategory');
 const User = require('../models/user');
+const UserProfile = require('../models/userProfile');
 const { LIMITS, checkMaxLength } = require('../utils/fieldLimits');
 
 /** 게시글 목록: 쿼리 category, search, limit, offset */
@@ -33,8 +34,8 @@ exports.getAllPosts = async (req, res, next) => {
     const posts = await Post.findAndCountAll({
       where: whereConditions,
       include: [
-        { model: User, as: 'Author', attributes: ['firebase_uid', 'id'] }, // Include author info
-        { model: PostCategory, as: 'Category', attributes: ['name'] }, // Include category name
+        { model: User, as: 'Author', attributes: ['id'], include: [{ model: UserProfile, attributes: ['nickname'], required: false }] },
+        { model: PostCategory, as: 'Category', attributes: ['name'] },
       ],
       limit: parseInt(limit),
       offset: parseInt(offset),
@@ -59,7 +60,7 @@ exports.getPostById = async (req, res, next) => {
 
     const post = await Post.findByPk(postId, {
       include: [
-        { model: User, as: 'Author', attributes: ['firebase_uid', 'id'] },
+        { model: User, as: 'Author', attributes: ['id'], include: [{ model: UserProfile, attributes: ['nickname'], required: false }] },
         { model: PostCategory, as: 'Category', attributes: ['name'] },
       ],
     });

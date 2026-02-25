@@ -4,20 +4,21 @@ import 'package:equatable/equatable.dart';
 class Itinerary extends Equatable {
   final String id;
   final String authorId;
+  /// 표시용 작성자 닉네임 (API에서 Author.UserProfile.nickname 등으로 내려줌).
+  final String? authorNickname;
   final String title;
   final String description;
   final DateTime startDate;
   final DateTime endDate;
   final List<String> imageUrls;
-  final List<Map<String, double>> mapData; // Example: List of {latitude, longitude} for markers/route
+  final List<Map<String, double>> mapData;
   final DateTime createdAt;
   final DateTime updatedAt;
-  // TODO: Add fields for likes, comments count etc.
-  // TODO: Add ItineraryDays and ItineraryActivities as nested objects/entities
 
   const Itinerary({
     required this.id,
     required this.authorId,
+    this.authorNickname,
     required this.title,
     required this.description,
     required this.startDate,
@@ -32,6 +33,7 @@ class Itinerary extends Equatable {
   List<Object?> get props => [
         id,
         authorId,
+        authorNickname,
         title,
         description,
         startDate,

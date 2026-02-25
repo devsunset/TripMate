@@ -205,6 +205,13 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                             '${_itinerary!.startDate.toLocal().toString().split(' ')[0]} ~ ${_itinerary!.endDate.toLocal().toString().split(' ')[0]}',
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
                           ),
+                          if (_itinerary!.authorNickname != null || _itinerary!.authorId.isNotEmpty) ...[
+                            const SizedBox(height: AppConstants.spacingSmall),
+                            Text(
+                              '작성자 ${_itinerary!.authorNickname ?? _itinerary!.authorId}',
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+                            ),
+                          ],
                           const SizedBox(height: AppConstants.spacingMedium),
                           if (_itinerary!.imageUrls.isNotEmpty)
                             SizedBox(
