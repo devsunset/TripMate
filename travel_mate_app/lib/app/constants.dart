@@ -33,4 +33,12 @@ class AppConstants {
   static const int passwordMinLength = 8;
   static const int otpLength = 6;
   static const Duration animationDuration = Duration(milliseconds: 300);
+
+  /// 메인 화면 카드 섹션별 배경 이미지 (동행 찾기, 채팅, 커뮤니티, 일정). 상세 화면 배경으로 전달.
+  static const List<String> sectionBackgroundImages = [
+    'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400', // 동행
+    'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400', // 채팅
+    'https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=400', // 커뮤니티
+    'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=400', // 일정
+  ];
 }

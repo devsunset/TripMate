@@ -12,7 +12,9 @@ import 'package:travel_mate_app/presentation/common/empty_state_widget.dart';
 
 /// 커뮤니티 게시글 목록 화면. 글쓰기·상세 이동.
 class CommunityScreen extends StatefulWidget {
-  const CommunityScreen({Key? key}) : super(key: key);
+  final String backgroundImageUrl;
+
+  const CommunityScreen({Key? key, required this.backgroundImageUrl}) : super(key: key);
 
   @override
   State<CommunityScreen> createState() => _CommunityScreenState();
@@ -68,7 +70,32 @@ class _CommunityScreenState extends State<CommunityScreen> {
           ),
         ],
       ),
-      body: _isLoading
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Positioned.fill(
+            child: Image.network(
+              widget.backgroundImageUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const ColoredBox(color: Color(0xFF1E1E32)),
+            ),
+          ),
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    const Color(0xFF1E1E32).withOpacity(0.25),
+                    const Color(0xFF1E1E32).withOpacity(0.45),
+                    const Color(0xFF1E1E32).withOpacity(0.65),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _isEmpty
               ? EmptyStateWidget(
@@ -119,6 +146,8 @@ class _CommunityScreenState extends State<CommunityScreen> {
                     },
                   ),
                 ),
+        ],
+      ),
     );
   }
 }

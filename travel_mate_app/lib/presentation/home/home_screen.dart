@@ -48,17 +48,12 @@ class _HomeScreenBodyState extends State<_HomeScreenBody> {
       Color(0xFFF59E0B), // Amber - 커뮤니티
       Color(0xFF10B981), // Emerald - 일정
     ];
-    const cardBgImages = [
-      'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400', // 동행/친구
-      'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400', // 채팅/메시지
-      'https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=400', // 커뮤니티/모임
-      'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=400', // 일정/여행
-    ];
+    final cardBgImages = AppConstants.sectionBackgroundImages;
     final navCards = [
-      (Icons.person_search_rounded, '동행 찾기', cardColors[0], cardBgImages[0], () => context.go('/matching/search')),
-      (Icons.chat_bubble_outline_rounded, '채팅', cardColors[1], cardBgImages[1], () => context.go('/chat')),
-      (Icons.article_outlined, '커뮤니티', cardColors[2], cardBgImages[2], () => context.go('/community')),
-      (Icons.calendar_month_rounded, '일정', cardColors[3], cardBgImages[3], () => context.go('/itinerary')),
+      (Icons.person_search_rounded, '동행 찾기', cardColors[0], cardBgImages[0], () => context.go('/matching/search', extra: cardBgImages[0])),
+      (Icons.chat_bubble_outline_rounded, '채팅', cardColors[1], cardBgImages[1], () => context.go('/chat', extra: cardBgImages[1])),
+      (Icons.article_outlined, '커뮤니티', cardColors[2], cardBgImages[2], () => context.go('/community', extra: cardBgImages[2])),
+      (Icons.calendar_month_rounded, '일정', cardColors[3], cardBgImages[3], () => context.go('/itinerary', extra: cardBgImages[3])),
     ];
 
     return Scaffold(

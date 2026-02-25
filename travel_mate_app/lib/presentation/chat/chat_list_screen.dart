@@ -13,7 +13,9 @@ import 'package:travel_mate_app/presentation/common/empty_state_widget.dart';
 
 /// 채팅방 목록 화면. 신청한/신청받은 채팅방만 표시(채팅방 찾기 조건 없음).
 class ChatListScreen extends StatefulWidget {
-  const ChatListScreen({Key? key}) : super(key: key);
+  final String backgroundImageUrl;
+
+  const ChatListScreen({Key? key, required this.backgroundImageUrl}) : super(key: key);
 
   @override
   State<ChatListScreen> createState() => _ChatListScreenState();
@@ -73,7 +75,32 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
     return Scaffold(
       appBar: const AppAppBar(title: '채팅'),
-      body: RefreshIndicator(
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Positioned.fill(
+            child: Image.network(
+              widget.backgroundImageUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const ColoredBox(color: Color(0xFF1E1E32)),
+            ),
+          ),
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    const Color(0xFF1E1E32).withOpacity(0.25),
+                    const Color(0xFF1E1E32).withOpacity(0.45),
+                    const Color(0xFF1E1E32).withOpacity(0.65),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          RefreshIndicator(
         onRefresh: _loadRooms,
         child: _loading
             ? const Center(child: CircularProgressIndicator())
@@ -110,6 +137,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
                           );
                         },
                       ),
+      ),
+        ],
       ),
     );
   }

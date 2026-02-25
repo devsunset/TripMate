@@ -22,6 +22,7 @@ import 'package:travel_mate_app/presentation/common/report_button_widget.dart';
 import 'package:travel_mate_app/presentation/itinerary/itinerary_list_screen.dart';
 import 'package:travel_mate_app/presentation/itinerary/itinerary_detail_screen.dart';
 import 'package:travel_mate_app/presentation/itinerary/itinerary_write_screen.dart';
+import 'package:travel_mate_app/app/constants.dart';
 import 'package:travel_mate_app/presentation/home/home_screen.dart';
 
 
@@ -74,7 +75,8 @@ GoRouter createRouter(User? user) {
       GoRoute(
         path: '/matching/search',
         builder: (BuildContext context, GoRouterState state) {
-          return const CompanionSearchScreen();
+          final bg = state.extra is String ? state.extra as String : AppConstants.sectionBackgroundImages[0];
+          return CompanionSearchScreen(backgroundImageUrl: bg);
         },
       ),
       GoRoute(
@@ -88,7 +90,8 @@ GoRouter createRouter(User? user) {
       GoRoute(
         path: '/chat',
         builder: (BuildContext context, GoRouterState state) {
-          return const ChatListScreen();
+          final bg = state.extra is String ? state.extra as String : AppConstants.sectionBackgroundImages[1];
+          return ChatListScreen(backgroundImageUrl: bg);
         },
       ),
       GoRoute(
@@ -104,7 +107,8 @@ GoRouter createRouter(User? user) {
       GoRoute(
         path: '/community',
         builder: (BuildContext context, GoRouterState state) {
-          return const CommunityScreen();
+          final bg = state.extra is String ? state.extra as String : AppConstants.sectionBackgroundImages[2];
+          return CommunityScreen(backgroundImageUrl: bg);
         },
       ),
       GoRoute(
@@ -150,7 +154,10 @@ GoRouter createRouter(User? user) {
       ),
       GoRoute(
         path: '/itinerary',
-        builder: (_, __) => const ItineraryListScreen(),
+        builder: (BuildContext context, GoRouterState state) {
+          final bg = state.extra is String ? state.extra as String : AppConstants.sectionBackgroundImages[3];
+          return ItineraryListScreen(backgroundImageUrl: bg);
+        },
       ),
       GoRoute(
         path: '/itinerary/new',

@@ -242,7 +242,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           ),
                           const SizedBox(height: AppConstants.spacingSmall),
                           Text(
-                            '${_post!.category} · 작성자 ${_post!.authorNickname ?? _post!.authorId}'
+                            '${_post!.category} · 작성자 ${_post!.authorNickname ?? _post!.authorId}',
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
                           ),
                           const SizedBox(height: AppConstants.spacingMedium),
