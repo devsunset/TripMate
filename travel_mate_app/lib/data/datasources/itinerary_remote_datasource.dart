@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:travel_mate_app/app/constants.dart';
 import 'package:travel_mate_app/data/models/itinerary_model.dart';
+import 'package:travel_mate_app/domain/entities/paginated_result.dart';
 
 class ItineraryRemoteDataSource {
   final FirebaseAuth _firebaseAuth;
@@ -60,8 +61,8 @@ class ItineraryRemoteDataSource {
     }
   }
 
-  // Get itineraries from backend API
-  Future<List<ItineraryModel>> getItineraries() async {
+  /// 일정 목록 페이징. limit, offset 기본 20, 0. total 포함 반환.
+  Future<PaginatedResult<ItineraryModel>> getItineraries({int limit = 20, int offset = 0}) async {
     try {
       final idToken = await _firebaseAuth.currentUser?.getIdToken();
       if (idToken == null) {
@@ -69,16 +70,21 @@ class ItineraryRemoteDataSource {
       }
 
       final response = await _dio.get(
-        '${AppConstants.apiBaseUrl}/api/itineraries', // Replace with your backend URL
+        '${AppConstants.apiBaseUrl}/api/itineraries',
+        queryParameters: {'limit': limit, 'offset': offset},
         options: Options(
           headers: {'Authorization': 'Bearer $idToken'},
         ),
       );
 
       if (response.statusCode == 200) {
-        return (response.data['itineraries'] as List)
-            .map((json) => ItineraryModel.fromJson(json))
-            .toList();
+        final data = response.data as Map<String, dynamic>?;
+        final total = (data?['total'] as num?)?.toInt() ?? 0;
+        final list = (data?['itineraries'] as List?)
+                ?.map((json) => ItineraryModel.fromJson(json as Map<String, dynamic>))
+                .toList() ??
+            [];
+        return PaginatedResult<ItineraryModel>(items: list, total: total);
       } else {
         throw Exception('Failed to load itineraries: ${response.data}');
       }

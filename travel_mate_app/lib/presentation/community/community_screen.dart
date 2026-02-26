@@ -19,15 +19,38 @@ class CommunityScreen extends StatefulWidget {
 }
 
 class _CommunityScreenState extends State<CommunityScreen> {
+  static const int _pageSize = 20;
+  final ScrollController _scrollController = ScrollController();
+
   bool _isLoading = false;
+  bool _isLoadingMore = false;
   String? _errorMessage;
   bool _isEmpty = false;
   List<Post> _posts = [];
+  int _total = 0;
+
+  bool get _hasMore => _posts.length < _total;
 
   @override
   void initState() {
     super.initState();
     _loadPosts();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_hasMore || _isLoadingMore || _isLoading) return;
+    final pos = _scrollController.position;
+    if (pos.pixels >= pos.maxScrollExtent - 200) {
+      _loadMore();
+    }
   }
 
   Future<void> _loadPosts() async {
@@ -35,24 +58,50 @@ class _CommunityScreenState extends State<CommunityScreen> {
       _isLoading = true;
       _errorMessage = null;
       _isEmpty = false;
+      _posts = [];
+      _total = 0;
     });
 
     try {
       final getPosts = Provider.of<GetPosts>(context, listen: false);
-      final fetchedPosts = await getPosts.execute();
+      final result = await getPosts.execute(limit: _pageSize, offset: 0);
 
-      setState(() {
-        _posts = fetchedPosts;
-        _isLoading = false;
-        _errorMessage = null;
-        _isEmpty = _posts.isEmpty;
-      });
+      if (mounted) {
+        setState(() {
+          _posts = result.items;
+          _total = result.total;
+          _isLoading = false;
+          _errorMessage = null;
+          _isEmpty = _posts.isEmpty;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _errorMessage = '글 목록을 불러오지 못했습니다.';
-        _isLoading = false;
-        _isEmpty = false;
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = '글 목록을 불러오지 못했습니다.';
+          _isLoading = false;
+          _isEmpty = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (!_hasMore || _isLoadingMore || _posts.isEmpty) return;
+    setState(() => _isLoadingMore = true);
+
+    try {
+      final getPosts = Provider.of<GetPosts>(context, listen: false);
+      final result = await getPosts.execute(limit: _pageSize, offset: _posts.length);
+
+      if (mounted) {
+        setState(() {
+          _posts = [..._posts, ...result.items];
+          _isLoadingMore = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoadingMore = false);
     }
   }
 
@@ -88,13 +137,20 @@ class _CommunityScreenState extends State<CommunityScreen> {
                   : RefreshIndicator(
                   onRefresh: _loadPosts,
                   child: ListView.builder(
+                    controller: _scrollController,
                     padding: EdgeInsets.only(
                       left: Responsive.value(context, compact: AppConstants.paddingSmall, medium: AppConstants.paddingMedium, expanded: AppConstants.paddingMedium),
                       right: Responsive.value(context, compact: AppConstants.paddingSmall, medium: AppConstants.paddingMedium, expanded: AppConstants.paddingMedium),
                       bottom: MediaQuery.paddingOf(context).bottom + 8,
                     ),
-                    itemCount: _posts.length,
+                    itemCount: _posts.length + (_hasMore && _isLoadingMore ? 1 : 0),
                     itemBuilder: (context, index) {
+                      if (index >= _posts.length) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
                       final post = _posts[index];
                       return Card(
                         margin: EdgeInsets.symmetric(

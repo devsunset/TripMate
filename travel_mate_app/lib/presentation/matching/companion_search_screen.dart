@@ -5,8 +5,10 @@ import 'package:provider/provider.dart';
 import 'package:travel_mate_app/app/theme.dart';
 import 'package:travel_mate_app/app/constants.dart';
 import 'package:travel_mate_app/app/responsive.dart';
+import 'package:travel_mate_app/domain/entities/paginated_result.dart';
 import 'package:travel_mate_app/domain/entities/user_profile.dart';
 import 'package:travel_mate_app/presentation/common/app_app_bar.dart';
+import 'package:travel_mate_app/presentation/common/profile_avatar_widget.dart';
 import 'package:travel_mate_app/domain/usecases/search_companions_usecase.dart';
 import 'package:travel_mate_app/presentation/common/empty_state_widget.dart';
 
@@ -27,8 +29,11 @@ class CompanionSearchScreen extends StatefulWidget {
 }
 
 class _CompanionSearchScreenState extends State<CompanionSearchScreen> {
+  static const int _pageSize = 20;
   final TextEditingController _destinationController = TextEditingController();
   final TextEditingController _searchKeywordController = TextEditingController();
+  final ScrollController _resultsScrollController = ScrollController();
+
   String? _selectedGender;
   String? _selectedAgeRange;
   final List<String> _selectedTravelStyles = [];
@@ -37,9 +42,13 @@ class _CompanionSearchScreenState extends State<CompanionSearchScreen> {
   DateTime? _endDate;
 
   bool _isLoading = false;
+  bool _isLoadingMore = false;
   String? _errorMessage;
   bool _noResults = false;
   List<UserProfile> _searchResults = [];
+  int _total = 0;
+
+  bool get _hasMore => _searchResults.length < _total;
 
   final List<String> _genders = ['남성', '여성', '기타', '무관'];
   final List<String> _ageRanges = ['10대', '20대', '30대', '40대', '50대 이상', '무관'];
@@ -47,10 +56,26 @@ class _CompanionSearchScreenState extends State<CompanionSearchScreen> {
   final List<String> _availableInterests = ['자연', '역사', '예술', '해변', '산', '도시 탐험', '사진', '쇼핑', '나이트라이프', '웰니스'];
 
   @override
+  void initState() {
+    super.initState();
+    _resultsScrollController.addListener(_onResultsScroll);
+  }
+
+  @override
   void dispose() {
+    _resultsScrollController.removeListener(_onResultsScroll);
+    _resultsScrollController.dispose();
     _destinationController.dispose();
     _searchKeywordController.dispose();
     super.dispose();
+  }
+
+  void _onResultsScroll() {
+    if (!_hasMore || _isLoadingMore || _isLoading || _searchResults.isEmpty) return;
+    final pos = _resultsScrollController.position;
+    if (pos.pixels >= pos.maxScrollExtent - 200) {
+      _loadMoreCompanions();
+    }
   }
 
   Future<void> _selectDateRange(BuildContext context) async {
@@ -76,33 +101,19 @@ class _CompanionSearchScreenState extends State<CompanionSearchScreen> {
       _errorMessage = null;
       _noResults = false;
       _searchResults = [];
+      _total = 0;
     });
 
     try {
       final usecase = Provider.of<SearchCompanionsUsecase>(context, listen: false);
-      final destination = _destinationController.text.trim();
-      final keyword = _searchKeywordController.text.trim();
-      final gender = _selectedGender != null && _selectedGender != '무관' ? _selectedGender : null;
-      final ageRange = _selectedAgeRange != null && _selectedAgeRange != '무관' ? _selectedAgeRange : null;
-      final travelStyles = _selectedTravelStyles.isEmpty ? null : List<String>.from(_selectedTravelStyles);
-      final interests = _selectedInterests.isEmpty ? null : List<String>.from(_selectedInterests);
-
-      final list = await usecase.execute(
-        destination: destination.isEmpty ? null : destination,
-        keyword: keyword.isEmpty ? null : keyword,
-        gender: gender,
-        ageRange: ageRange,
-        travelStyles: travelStyles,
-        interests: interests,
-        limit: 50,
-        offset: 0,
-      );
+      final result = await _executeSearch(usecase, limit: _pageSize, offset: 0);
 
       if (mounted) {
         setState(() {
-          _searchResults = list;
+          _searchResults = result.items;
+          _total = result.total;
           _isLoading = false;
-          _noResults = list.isEmpty;
+          _noResults = result.items.isEmpty;
         });
       }
     } catch (e) {
@@ -114,6 +125,45 @@ class _CompanionSearchScreenState extends State<CompanionSearchScreen> {
         });
       }
     }
+  }
+
+  Future<void> _loadMoreCompanions() async {
+    if (!_hasMore || _isLoadingMore || _isLoading || _searchResults.isEmpty) return;
+    setState(() => _isLoadingMore = true);
+
+    try {
+      final usecase = Provider.of<SearchCompanionsUsecase>(context, listen: false);
+      final result = await _executeSearch(usecase, limit: _pageSize, offset: _searchResults.length);
+
+      if (mounted) {
+        final nextItems = result.items;
+        setState(() {
+          _searchResults = [..._searchResults, ...nextItems];
+          _isLoadingMore = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoadingMore = false);
+    }
+  }
+
+  Future<PaginatedResult<UserProfile>> _executeSearch(SearchCompanionsUsecase usecase, {required int limit, required int offset}) {
+    final destination = _destinationController.text.trim();
+    final keyword = _searchKeywordController.text.trim();
+    final gender = _selectedGender != null && _selectedGender != '무관' ? _selectedGender : null;
+    final ageRange = _selectedAgeRange != null && _selectedAgeRange != '무관' ? _selectedAgeRange : null;
+    final travelStyles = _selectedTravelStyles.isEmpty ? null : List<String>.from(_selectedTravelStyles);
+    final interests = _selectedInterests.isEmpty ? null : List<String>.from(_selectedInterests);
+    return usecase.execute(
+      destination: destination.isEmpty ? null : destination,
+      keyword: keyword.isEmpty ? null : keyword,
+      gender: gender,
+      ageRange: ageRange,
+      travelStyles: travelStyles,
+      interests: interests,
+      limit: limit,
+      offset: offset,
+    );
   }
 
   @override
@@ -310,10 +360,16 @@ class _CompanionSearchScreenState extends State<CompanionSearchScreen> {
                                 subtitle: '목적지, 성별, 연령대 등을 선택한 뒤 검색 버튼을 눌러 주세요.',
                               )
                             : ListView.builder(
-                            itemCount: _searchResults.length,
+                            controller: _resultsScrollController,
+                            itemCount: _searchResults.length + (_hasMore && _isLoadingMore ? 1 : 0),
                             itemBuilder: (context, index) {
+                              if (index >= _searchResults.length) {
+                                return const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 16),
+                                  child: Center(child: CircularProgressIndicator()),
+                                );
+                              }
                               final user = _searchResults[index];
-                              final imageUrl = user.profileImageUrl;
                               return Card(
                                 margin: EdgeInsets.symmetric(
                                   horizontal: Responsive.value(context, compact: AppConstants.paddingSmall, medium: AppConstants.paddingMedium, expanded: AppConstants.paddingMedium),
@@ -321,14 +377,7 @@ class _CompanionSearchScreenState extends State<CompanionSearchScreen> {
                                 ),
                                 elevation: 1,
                                 child: ListTile(
-                                  leading: CircleAvatar(
-                                    backgroundImage: (imageUrl != null && imageUrl.isNotEmpty)
-                                        ? NetworkImage(imageUrl)
-                                        : null,
-                                    child: (imageUrl == null || imageUrl.isEmpty)
-                                        ? const Icon(Icons.person, color: Colors.grey)
-                                        : null,
-                                  ),
+                                  leading: ProfileAvatar(profileImageUrl: user.profileImageUrl, gender: user.gender, radius: 20),
                                   title: Text(user.nickname),
                                   subtitle: Text('${user.gender ?? ''} ${user.ageRange ?? ''}\n${user.bio ?? ''}'.trim()),
                                   isThreeLine: true,

@@ -5,6 +5,7 @@ import 'dart:io' if (dart.library.html) 'package:travel_mate_app/core/io_stub/fi
 import 'package:travel_mate_app/data/datasources/itinerary_remote_datasource.dart';
 import 'package:travel_mate_app/data/models/itinerary_model.dart';
 import 'package:travel_mate_app/domain/entities/itinerary.dart';
+import 'package:travel_mate_app/domain/entities/paginated_result.dart';
 import 'package:travel_mate_app/domain/repositories/itinerary_repository.dart';
 
 class ItineraryRepositoryImpl implements ItineraryRepository {
@@ -13,8 +14,9 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
   ItineraryRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<List<Itinerary>> getItineraries() async {
-    return await remoteDataSource.getItineraries();
+  Future<PaginatedResult<Itinerary>> getItineraries({int limit = 20, int offset = 0}) async {
+    final result = await remoteDataSource.getItineraries(limit: limit, offset: offset);
+    return PaginatedResult<Itinerary>(items: result.items, total: result.total);
   }
 
   @override

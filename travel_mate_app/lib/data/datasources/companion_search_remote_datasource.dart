@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:dio/dio.dart';
 import 'package:travel_mate_app/app/constants.dart';
 import 'package:travel_mate_app/data/models/user_profile_model.dart';
+import 'package:travel_mate_app/domain/entities/paginated_result.dart';
 
 class CompanionSearchRemoteDataSource {
   final FirebaseAuth _firebaseAuth;
@@ -17,8 +18,8 @@ class CompanionSearchRemoteDataSource {
         _dio = dio ?? Dio();
 
   /// 동행 검색. 쿼리: destination, keyword, gender, ageRange, travelStyles, interests, limit, offset
-  /// 실제 요청 파라미터와 응답 결과는 디버그 로그로 출력됨.
-  Future<List<UserProfileModel>> searchCompanions({
+  /// 실제 요청 파라미터와 응답 결과는 디버그 로그로 출력됨. total 포함 반환.
+  Future<PaginatedResult<UserProfileModel>> searchCompanions({
     String? destination,
     String? keyword,
     String? gender,
@@ -61,7 +62,7 @@ class CompanionSearchRemoteDataSource {
 
     if (response.statusCode == 200) {
       final data = response.data as Map<String, dynamic>?;
-      final total = data?['total'];
+      final total = (data?['total'] as num?)?.toInt() ?? 0;
       final list = data?['users'] as List<dynamic>? ?? [];
       final results = list
           .map((e) => UserProfileModel.fromJson(Map<String, dynamic>.from(e as Map)))
@@ -74,7 +75,7 @@ class CompanionSearchRemoteDataSource {
         }
       }
 
-      return results;
+      return PaginatedResult<UserProfileModel>(items: results, total: total);
     }
     throw Exception('동행 검색 실패: ${response.statusCode}');
   }

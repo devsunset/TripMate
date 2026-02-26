@@ -19,15 +19,38 @@ class ItineraryListScreen extends StatefulWidget {
 }
 
 class _ItineraryListScreenState extends State<ItineraryListScreen> {
+  static const int _pageSize = 20;
+  final ScrollController _scrollController = ScrollController();
+
   bool _isLoading = false;
+  bool _isLoadingMore = false;
   String? _errorMessage;
   bool _isEmpty = false;
   List<Itinerary> _itineraries = [];
+  int _total = 0;
+
+  bool get _hasMore => _itineraries.length < _total;
 
   @override
   void initState() {
     super.initState();
     _loadItineraries();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_hasMore || _isLoadingMore || _isLoading) return;
+    final pos = _scrollController.position;
+    if (pos.pixels >= pos.maxScrollExtent - 200) {
+      _loadMore();
+    }
   }
 
   Future<void> _loadItineraries() async {
@@ -35,23 +58,49 @@ class _ItineraryListScreenState extends State<ItineraryListScreen> {
       _isLoading = true;
       _errorMessage = null;
       _isEmpty = false;
+      _itineraries = [];
+      _total = 0;
     });
 
     try {
       final getItineraries = Provider.of<GetItineraries>(context, listen: false);
-      final fetchedItineraries = await getItineraries.execute();
+      final result = await getItineraries.execute(limit: _pageSize, offset: 0);
 
-      setState(() {
-        _itineraries = fetchedItineraries;
-        _isLoading = false;
-        _isEmpty = _itineraries.isEmpty;
-      });
+      if (mounted) {
+        setState(() {
+          _itineraries = result.items;
+          _total = result.total;
+          _isLoading = false;
+          _isEmpty = _itineraries.isEmpty;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _errorMessage = '일정 목록을 불러오지 못했습니다.';
-        _isLoading = false;
-        _isEmpty = false;
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = '일정 목록을 불러오지 못했습니다.';
+          _isLoading = false;
+          _isEmpty = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (!_hasMore || _isLoadingMore || _itineraries.isEmpty) return;
+    setState(() => _isLoadingMore = true);
+
+    try {
+      final getItineraries = Provider.of<GetItineraries>(context, listen: false);
+      final result = await getItineraries.execute(limit: _pageSize, offset: _itineraries.length);
+
+      if (mounted) {
+        setState(() {
+          _itineraries = [..._itineraries, ...result.items];
+          _isLoadingMore = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoadingMore = false);
     }
   }
 
@@ -87,13 +136,20 @@ class _ItineraryListScreenState extends State<ItineraryListScreen> {
                   : RefreshIndicator(
                   onRefresh: _loadItineraries,
                   child: ListView.builder(
+                    controller: _scrollController,
                     padding: EdgeInsets.only(
                       left: Responsive.value(context, compact: AppConstants.paddingSmall, medium: AppConstants.paddingMedium, expanded: AppConstants.paddingMedium),
                       right: Responsive.value(context, compact: AppConstants.paddingSmall, medium: AppConstants.paddingMedium, expanded: AppConstants.paddingMedium),
                       bottom: MediaQuery.paddingOf(context).bottom + 8,
                     ),
-                    itemCount: _itineraries.length,
+                    itemCount: _itineraries.length + (_hasMore && _isLoadingMore ? 1 : 0),
                     itemBuilder: (context, index) {
+                      if (index >= _itineraries.length) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
                       final itinerary = _itineraries[index];
                       return Card(
                         margin: EdgeInsets.symmetric(

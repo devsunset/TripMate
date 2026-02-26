@@ -7,6 +7,7 @@ import 'package:travel_mate_app/app/constants.dart';
 import 'package:travel_mate_app/core/utils/mask_utils.dart';
 import 'package:travel_mate_app/domain/entities/user_profile.dart';
 import 'package:travel_mate_app/presentation/common/app_app_bar.dart';
+import 'package:travel_mate_app/presentation/common/profile_avatar_widget.dart';
 import 'package:travel_mate_app/domain/usecases/get_user_profile.dart';
 
 /// 현재 사용자 프로필 상세·편집 진입 화면.
@@ -122,11 +123,13 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          CircleAvatar(
+                          ProfileAvatar(
+                            profileImageUrl: _userProfile?.profileImageUrl,
+                            gender: _userProfile?.gender,
                             radius: 80,
+                            iconSize: 80,
                             backgroundColor: AppColors.lightGrey,
-                            backgroundImage: hasImage ? NetworkImage(_userProfile!.profileImageUrl!) : null,
-                            child: hasImage ? null : Icon(Icons.person, size: 80, color: AppColors.grey),
+                            iconColor: AppColors.grey,
                           ),
                           const SizedBox(height: AppConstants.spacingLarge),
                           Text(

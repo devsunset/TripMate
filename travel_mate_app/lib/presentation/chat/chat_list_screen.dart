@@ -10,6 +10,7 @@ import 'package:travel_mate_app/app/constants.dart';
 import 'package:travel_mate_app/domain/entities/chat_room_info.dart';
 import 'package:travel_mate_app/domain/usecases/get_chat_rooms.dart';
 import 'package:travel_mate_app/presentation/common/app_app_bar.dart';
+import 'package:travel_mate_app/presentation/common/profile_avatar_widget.dart';
 import 'package:travel_mate_app/presentation/common/empty_state_widget.dart';
 
 /// 채팅방 목록 화면. 신청한/신청받은 채팅방만 표시(채팅방 찾기 조건 없음).
@@ -145,13 +146,12 @@ class _ChatRoomTile extends StatelessWidget {
       ),
       elevation: 0.5,
       child: ListTile(
-        leading: CircleAvatar(
-          backgroundImage: (imageUrl != null && imageUrl.isNotEmpty)
-              ? NetworkImage(imageUrl)
-              : null,
-          child: (imageUrl == null || imageUrl.isEmpty)
-              ? const Icon(Icons.person, color: Colors.grey)
-              : null,
+        leading: ProfileAvatar(
+          profileImageUrl: imageUrl,
+          gender: null,
+          radius: 24,
+          backgroundColor: AppColors.lightGrey,
+          iconColor: AppColors.grey,
         ),
         title: Row(
           children: [

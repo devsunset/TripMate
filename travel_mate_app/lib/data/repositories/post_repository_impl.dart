@@ -4,6 +4,7 @@ import 'dart:io' if (dart.library.html) 'package:travel_mate_app/core/io_stub/fi
 
 import 'package:travel_mate_app/data/datasources/post_remote_datasource.dart';
 import 'package:travel_mate_app/data/models/post_model.dart';
+import 'package:travel_mate_app/domain/entities/paginated_result.dart';
 import 'package:travel_mate_app/domain/entities/post.dart';
 import 'package:travel_mate_app/domain/repositories/post_repository.dart';
 
@@ -13,8 +14,9 @@ class PostRepositoryImpl implements PostRepository {
   PostRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<List<Post>> getPosts() async {
-    return await remoteDataSource.getPosts();
+  Future<PaginatedResult<Post>> getPosts({int limit = 20, int offset = 0}) async {
+    final result = await remoteDataSource.getPosts(limit: limit, offset: offset);
+    return PaginatedResult<Post>(items: result.items, total: result.total);
   }
 
   @override

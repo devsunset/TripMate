@@ -9,6 +9,7 @@ import 'package:travel_mate_app/app/responsive.dart';
 import 'package:travel_mate_app/core/services/auth_service.dart';
 import 'package:travel_mate_app/app/constants.dart';
 import 'package:travel_mate_app/presentation/common/app_app_bar.dart';
+import 'package:travel_mate_app/presentation/common/profile_avatar_widget.dart';
 import 'package:travel_mate_app/domain/usecases/get_user_profile.dart';
 import 'package:travel_mate_app/domain/usecases/update_user_profile.dart';
 import 'package:travel_mate_app/domain/usecases/upload_profile_image.dart';
@@ -205,7 +206,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                                       ? NetworkImage(_currentProfileImageUrl!) as ImageProvider
                                       : null),
                               child: _pickedImageBytes == null && (_currentProfileImageUrl == null || _currentProfileImageUrl!.isEmpty)
-                                  ? Icon(Icons.person, size: 70, color: AppColors.grey)
+                                  ? Icon(ProfileAvatar.iconForGender(_gender), size: 70, color: AppColors.grey)
                                   : null,
                             ),
                             Positioned(

@@ -1,5 +1,6 @@
-/// 동행 검색 유스케이스
+/// 동행 검색 유스케이스. 페이징 지원.
 library;
+import 'package:travel_mate_app/domain/entities/paginated_result.dart';
 import 'package:travel_mate_app/domain/entities/user_profile.dart';
 import 'package:travel_mate_app/domain/repositories/companion_repository.dart';
 
@@ -8,7 +9,7 @@ class SearchCompanionsUsecase {
 
   SearchCompanionsUsecase(this._repository);
 
-  Future<List<UserProfile>> execute({
+  Future<PaginatedResult<UserProfile>> execute({
     String? destination,
     String? keyword,
     String? gender,
@@ -18,7 +19,7 @@ class SearchCompanionsUsecase {
     int limit = 20,
     int offset = 0,
   }) async {
-    return _repository.searchCompanions(
+    return await _repository.searchCompanions(
       destination: destination,
       keyword: keyword,
       gender: gender,

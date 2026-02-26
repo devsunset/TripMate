@@ -7,6 +7,7 @@ import 'package:travel_mate_app/app/theme.dart';
 import 'package:travel_mate_app/app/constants.dart';
 import 'package:travel_mate_app/domain/entities/user_profile.dart';
 import 'package:travel_mate_app/presentation/common/app_app_bar.dart';
+import 'package:travel_mate_app/presentation/common/profile_avatar_widget.dart';
 import 'package:travel_mate_app/domain/usecases/get_user_profile.dart';
 import 'package:travel_mate_app/domain/usecases/create_chat_room.dart';
 import 'package:travel_mate_app/presentation/common/report_button_widget.dart';
@@ -212,7 +213,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Widget _buildAvatar() {
-    final hasImage = _userProfile?.profileImageUrl != null && _userProfile!.profileImageUrl!.isNotEmpty;
     const color = Color(0xFF0EA5E9);
     final cardBase = Color.lerp(Colors.white, color, 0.15)!;
     return Container(
@@ -225,11 +225,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         ],
         color: cardBase,
       ),
-      child: CircleAvatar(
+      child: ProfileAvatar(
+        profileImageUrl: _userProfile?.profileImageUrl,
+        gender: _userProfile?.gender,
         radius: 56,
+        iconSize: 64,
         backgroundColor: AppColors.lightGrey,
-        backgroundImage: hasImage ? NetworkImage(_userProfile!.profileImageUrl!) : null,
-        child: hasImage ? null : Icon(Icons.person, size: 64, color: AppColors.grey),
+        iconColor: AppColors.grey,
       ),
     );
   }
