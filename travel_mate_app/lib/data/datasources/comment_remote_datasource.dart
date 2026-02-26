@@ -79,11 +79,26 @@ class CommentRemoteDataSource {
   }
 
   static String? _authorNicknameFromMap(Map<String, dynamic> map) {
-    final author = map['Author'] as Map<String, dynamic>? ?? map['author'] as Map<String, dynamic>?;
-    if (author == null) return null;
-    final profile = author['UserProfile'] as Map<String, dynamic>? ?? author['userProfile'] as Map<String, dynamic>?;
+    final profile = _authorProfileFromMap(map);
     final nick = profile?['nickname'];
     return nick?.toString();
+  }
+
+  static Map<String, dynamic>? _authorProfileFromMap(Map<String, dynamic> map) {
+    final author = map['Author'] as Map<String, dynamic>? ?? map['author'] as Map<String, dynamic>?;
+    if (author == null) return null;
+    return author['UserProfile'] as Map<String, dynamic>? ?? author['userProfile'] as Map<String, dynamic>?;
+  }
+
+  static String? _authorProfileImageUrlFromMap(Map<String, dynamic> map) {
+    final profile = _authorProfileFromMap(map);
+    final url = profile?['profileImageUrl']?.toString();
+    return (url != null && url.trim().isNotEmpty) ? url.trim() : null;
+  }
+
+  static String? _authorGenderFromMap(Map<String, dynamic> map) {
+    final profile = _authorProfileFromMap(map);
+    return profile?['gender']?.toString();
   }
 
   static Comment _commentFromJson(dynamic e) {
@@ -102,6 +117,8 @@ class CommentRemoteDataSource {
       id: int.parse(map['id'].toString()),
       authorId: authorId,
       authorNickname: _authorNicknameFromMap(map),
+      authorProfileImageUrl: _authorProfileImageUrlFromMap(map),
+      authorGender: _authorGenderFromMap(map),
       postId: map['postId'] != null ? int.tryParse(map['postId'].toString()) : null,
       itineraryId: map['itineraryId'] != null ? int.tryParse(map['itineraryId'].toString()) : null,
       parentCommentId: map['parentCommentId'] != null ? int.tryParse(map['parentCommentId'].toString()) : null,

@@ -25,7 +25,7 @@ exports.getComments = async (req, res, next) => {
       return res.status(400).json({ message: 'postId 또는 itineraryId가 필요합니다.' });
     }
 
-    const authorInclude = { model: User, as: 'Author', attributes: ['id'], include: [{ model: UserProfile, attributes: ['nickname'], required: false }] };
+    const authorInclude = { model: User, as: 'Author', attributes: ['id'], include: [{ model: UserProfile, attributes: ['nickname', 'profileImageUrl', 'gender'], required: false }] };
     // 대댓글은 Author 없이 조회 후, 작성자 정보만 별도 쿼리로 채움 (동일 User 테이블 별칭 충돌 방지)
     const comments = await Comment.findAll({
       where: whereConditions,
@@ -48,7 +48,7 @@ exports.getComments = async (req, res, next) => {
       const replyAuthors = await User.findAll({
         where: { id: uniqueAuthorIds },
         attributes: ['id'],
-        include: [{ model: UserProfile, attributes: ['nickname'], required: false }],
+        include: [{ model: UserProfile, attributes: ['nickname', 'profileImageUrl', 'gender'], required: false }],
       });
       replyAuthorsMap = replyAuthors.reduce((acc, u) => {
         acc[u.id] = { id: u.id, UserProfile: u.UserProfile };
@@ -146,7 +146,7 @@ exports.addComment = async (req, res, next) => {
       });
     }
 
-    const authorInclude = { model: User, as: 'Author', attributes: ['id'], include: [{ model: UserProfile, attributes: ['nickname'], required: false }] };
+    const authorInclude = { model: User, as: 'Author', attributes: ['id'], include: [{ model: UserProfile, attributes: ['nickname', 'profileImageUrl', 'gender'], required: false }] };
     const withAuthor = await Comment.findByPk(comment.id, { include: [authorInclude] });
     res.status(201).json({ message: '댓글이 등록되었습니다.', comment: withAuthor || comment });
   } catch (error) {

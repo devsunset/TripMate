@@ -7,6 +7,10 @@ class Comment extends Equatable {
   final String authorId;
   /// 표시용 작성자 닉네임 (API에서 Author.UserProfile.nickname 등으로 내려줌).
   final String? authorNickname;
+  /// 작성자 프로필 이미지 URL. 없으면 성별 아이콘 또는 기본 person 아이콘 표시.
+  final String? authorProfileImageUrl;
+  /// 작성자 성별(예: 남성, 여성). 이미지 없을 때 아이콘 선택용.
+  final String? authorGender;
   final int? postId;
   final int? itineraryId;
   final int? parentCommentId;
@@ -20,6 +24,8 @@ class Comment extends Equatable {
     required this.id,
     required this.authorId,
     this.authorNickname,
+    this.authorProfileImageUrl,
+    this.authorGender,
     this.postId,
     this.itineraryId,
     this.parentCommentId,

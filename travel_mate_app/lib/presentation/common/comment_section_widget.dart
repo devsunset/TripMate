@@ -260,6 +260,33 @@ class _CommentItem extends StatelessWidget {
     required this.onReplied,
   });
 
+  /// 프로필 이미지가 있으면 이미지, 없으면 성별(남성/여성)에 맞는 아이콘 또는 기본 person 아이콘.
+  Widget _buildCommentAuthorAvatar(Comment comment) {
+    const double radius = 18;
+    const double iconSize = 20;
+    IconData icon = Icons.person;
+    if (comment.authorGender != null) {
+      if (comment.authorGender == '남성') icon = Icons.male;
+      else if (comment.authorGender == '여성') icon = Icons.female;
+    }
+    final hasImage = comment.authorProfileImageUrl != null && comment.authorProfileImageUrl!.trim().isNotEmpty;
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: AppColors.primary.withOpacity(0.3),
+      child: hasImage
+          ? ClipOval(
+              child: Image.network(
+                comment.authorProfileImageUrl!,
+                fit: BoxFit.cover,
+                width: radius * 2,
+                height: radius * 2,
+                errorBuilder: (_, __, ___) => Icon(icon, size: iconSize, color: AppColors.primary),
+              ),
+            )
+          : Icon(icon, size: iconSize, color: AppColors.primary),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final canDelete = currentUserId != null && comment.authorId == currentUserId;
@@ -271,11 +298,7 @@ class _CommentItem extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(
-                radius: 18,
-                backgroundColor: AppColors.primary.withOpacity(0.3),
-                child: Icon(Icons.person, size: 20, color: AppColors.primary),
-              ),
+              _buildCommentAuthorAvatar(comment),
               const SizedBox(width: AppConstants.spacingSmall),
               Expanded(
                 child: Column(
