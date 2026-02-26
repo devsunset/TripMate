@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:travel_mate_app/app/theme.dart';
 import 'package:travel_mate_app/app/constants.dart';
+import 'package:travel_mate_app/app/responsive.dart';
+import 'package:travel_mate_app/core/services/auth_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 /// 로그인 후 홈 화면. 히어로 + 기능 카드 + 탐색 버튼 (Travel-Companion-Finder 스타일).
 /// 뷰포트 높이에 맞춰 반응형으로 간격·폰트·그리드 크기 조정. 사용자 식별은 백엔드 id만 사용.
@@ -23,12 +26,30 @@ class _HomeScreenBody extends StatefulWidget {
 
 class _HomeScreenBodyState extends State<_HomeScreenBody> {
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _verifyBackendSession());
+  }
+
+  /// 메인 화면 진입 시 백엔드 세션 유효성 재확인. 401 등이면 로그아웃 처리해 로그인 화면으로 보냄.
+  Future<void> _verifyBackendSession() async {
+    if (!mounted) return;
+    final auth = context.read<AuthService>();
+    final userId = await auth.getCurrentBackendUserId();
+    if (userId == null && mounted) {
+      await auth.signOut();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final h = MediaQuery.sizeOf(context).height;
-    final isCompact = h < 680;
-    final isMedium = h >= 680 && h < 820;
+    final w = MediaQuery.sizeOf(context).width;
+    final isCompact = h < 680 || w < Responsive.breakpointMedium;
+    final isMedium = !isCompact && (h < 820 || w < Responsive.breakpointExpanded);
 
     // 반응형 값: 작은 화면일수록 여백·폰트·버튼 높이 축소
+    final headerPaddingH = Responsive.value(context, compact: AppConstants.paddingMedium, medium: AppConstants.paddingLarge, expanded: AppConstants.paddingLarge);
     final headerPaddingV = isCompact ? 6.0 : (isMedium ? 10.0 : AppConstants.paddingMedium);
     final heroTop = isCompact ? 8.0 : (isMedium ? 14.0 : 24.0);
     final badgePaddingH = isCompact ? 10.0 : 14.0;
@@ -55,6 +76,10 @@ class _HomeScreenBodyState extends State<_HomeScreenBody> {
       (Icons.article_outlined, '커뮤니티', cardColors[2], cardBgImages[2], () => context.go('/community', extra: cardBgImages[2])),
       (Icons.calendar_month_rounded, '일정', cardColors[3], cardBgImages[3], () => context.go('/itinerary', extra: cardBgImages[3])),
     ];
+
+    // 데스크톱: 콘텐츠 최대 너비 제한(중앙 정렬). 모바일: 전체 너비 사용.
+    final maxContentWidth = w >= Responsive.breakpointMedium ? 560.0 : w;
+    final padH = headerPaddingH;
 
     return Scaffold(
       body: Stack(
@@ -91,162 +116,177 @@ class _HomeScreenBodyState extends State<_HomeScreenBody> {
             ),
           ),
           SafeArea(
-          child: Column(
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppConstants.paddingLarge, vertical: headerPaddingV),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: maxContentWidth),
+                child: SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: h - MediaQuery.paddingOf(context).vertical,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
-                          width: isCompact ? 40 : 44,
-                          height: isCompact ? 40 : 44,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.primary.withOpacity(0.25),
-                                blurRadius: 10,
-                                offset: const Offset(0, 2),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: padH, vertical: headerPaddingV),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    width: isCompact ? 40 : 44,
+                                    height: isCompact ? 40 : 44,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppColors.primary.withOpacity(0.25),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Image.asset(
+                                        'images/app_logo.png',
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: isCompact ? 8 : 10),
+                                  Text(
+                                    'TravelMate',
+                                    style: GoogleFonts.outfit(
+                                      fontSize: isCompact ? 18 : 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      shadows: [
+                                        Shadow(color: Colors.black54, blurRadius: 8, offset: const Offset(0, 1)),
+                                        Shadow(color: Colors.black38, blurRadius: 4, offset: const Offset(0, 0)),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  IconButton(
+                                    icon: Icon(Icons.person_outline, color: Colors.white, size: isCompact ? 22 : 24),
+                                    onPressed: () => context.go('/profile'),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.settings_outlined, color: Colors.white, size: isCompact ? 22 : 24),
+                                    onPressed: () => context.go('/settings/account'),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.asset(
-                              'images/app_logo.png',
-                              fit: BoxFit.cover,
-                            ),
-                          ),
                         ),
-                        SizedBox(width: isCompact ? 8 : 10),
-                        Text(
-                          'TravelMate',
-                          style: GoogleFonts.outfit(
-                            fontSize: isCompact ? 18 : 22,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            shadows: [
-                              Shadow(color: Colors.black54, blurRadius: 8, offset: const Offset(0, 1)),
-                              Shadow(color: Colors.black38, blurRadius: 4, offset: const Offset(0, 0)),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: padH),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(height: heroTop),
+                              Container(
+                                padding: EdgeInsets.symmetric(horizontal: badgePaddingH, vertical: badgePaddingV),
+                                decoration: BoxDecoration(
+                                  color: AppColors.secondary.withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(100),
+                                  border: Border.all(color: AppColors.secondary.withOpacity(0.3)),
+                                ),
+                                child: Text(
+                                  'Explore the world together',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: badgeFontSize,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                    shadows: [
+                                      Shadow(color: Colors.black45, blurRadius: 4, offset: const Offset(0, 1)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: isCompact ? 8 : 16),
+                              ShaderMask(
+                                shaderCallback: (bounds) => const LinearGradient(
+                                  colors: [AppColors.primary, AppColors.accent, AppColors.secondary],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ).createShader(bounds),
+                                child: Text(
+                                  'Find Your\nTravel Squad',
+                                  style: GoogleFonts.outfit(
+                                    fontSize: heroTitleSize,
+                                    fontWeight: FontWeight.bold,
+                                    height: 1.15,
+                                    color: Colors.white,
+                                    shadows: [
+                                      Shadow(color: Colors.black54, blurRadius: 10, offset: const Offset(0, 2)),
+                                      Shadow(color: Colors.black38, blurRadius: 4, offset: const Offset(0, 0)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: heroAfterTitle),
+                              Text(
+                                '같은 취향의 여행자와 만나고, 일정을 공유하고, 추억을 나눠보세요.',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: heroSubtitleSize,
+                                  color: Colors.white.withOpacity(0.95),
+                                  height: 1.4,
+                                  shadows: [
+                                    Shadow(color: Colors.black54, blurRadius: 6, offset: const Offset(0, 1)),
+                                    Shadow(color: Colors.black38, blurRadius: 2, offset: const Offset(0, 0)),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: heroBottom),
                             ],
                           ),
                         ),
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final viewportHeight = h - MediaQuery.paddingOf(context).top - MediaQuery.paddingOf(context).bottom;
+                            final estimatedHeaderHero = isCompact ? 200.0 : 260.0;
+                            final gridHeight = (viewportHeight - estimatedHeaderHero - bottomPadding).clamp(200.0, 420.0);
+                            final contentWidth = (maxContentWidth - 2 * padH - gridSpacing).clamp(200.0, double.infinity);
+                            final cellWidth = (contentWidth) / 2;
+                            final rowHeight = (gridHeight - gridSpacing) / 2;
+                            final aspectRatio = (cellWidth / rowHeight.clamp(40.0, double.infinity)).clamp(0.6, 1.4);
+                            return Padding(
+                              padding: EdgeInsets.only(left: padH, right: padH, bottom: bottomPadding),
+                              child: SizedBox(
+                                height: gridHeight,
+                                child: GridView.builder(
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    mainAxisSpacing: gridSpacing,
+                                    crossAxisSpacing: gridSpacing,
+                                    childAspectRatio: aspectRatio,
+                                  ),
+                                  itemCount: 4,
+                                  itemBuilder: (context, index) {
+                                    final item = navCards[index];
+                                    return _NavCard(icon: item.$1, label: item.$2, color: item.$3, backgroundImageUrl: item.$4, onTap: item.$5, compact: isCompact);
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       ],
                     ),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.person_outline, color: Colors.white, size: isCompact ? 22 : 24),
-                          onPressed: () => context.go('/profile'),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.settings_outlined, color: Colors.white, size: isCompact ? 22 : 24),
-                          onPressed: () => context.go('/settings/account'),
-                        ),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingLarge),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(height: heroTop),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: badgePaddingH, vertical: badgePaddingV),
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(100),
-                        border: Border.all(color: AppColors.secondary.withOpacity(0.3)),
-                      ),
-                      child: Text(
-                        'Explore the world together',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: badgeFontSize,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                          shadows: [
-                            Shadow(color: Colors.black45, blurRadius: 4, offset: const Offset(0, 1)),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: isCompact ? 8 : 16),
-                    ShaderMask(
-                      shaderCallback: (bounds) => const LinearGradient(
-                        colors: [AppColors.primary, AppColors.accent, AppColors.secondary],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ).createShader(bounds),
-                      child: Text(
-                        'Find Your\nTravel Squad',
-                        style: GoogleFonts.outfit(
-                          fontSize: heroTitleSize,
-                          fontWeight: FontWeight.bold,
-                          height: 1.15,
-                          color: Colors.white,
-                          shadows: [
-                            Shadow(color: Colors.black54, blurRadius: 10, offset: const Offset(0, 2)),
-                            Shadow(color: Colors.black38, blurRadius: 4, offset: const Offset(0, 0)),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: heroAfterTitle),
-                    Text(
-                      '같은 취향의 여행자와 만나고, 일정을 공유하고, 추억을 나눠보세요.',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: heroSubtitleSize,
-                        color: Colors.white.withOpacity(0.95),
-                        height: 1.4,
-                        shadows: [
-                          Shadow(color: Colors.black54, blurRadius: 6, offset: const Offset(0, 1)),
-                          Shadow(color: Colors.black38, blurRadius: 2, offset: const Offset(0, 0)),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: heroBottom),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final availableHeight = constraints.maxHeight - bottomPadding;
-                    final w = MediaQuery.sizeOf(context).width;
-                    final pad = AppConstants.paddingLarge;
-                    final cellWidth = (w - 2 * pad - gridSpacing) / 2;
-                    final rowHeight = (availableHeight - gridSpacing) / 2;
-                    final aspectRatio = cellWidth / rowHeight.clamp(40.0, double.infinity);
-                    return Padding(
-                      padding: EdgeInsets.only(left: pad, right: pad, bottom: bottomPadding),
-                      child: GridView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: gridSpacing,
-                          crossAxisSpacing: gridSpacing,
-                          childAspectRatio: aspectRatio,
-                        ),
-                        itemCount: 4,
-                        itemBuilder: (context, index) {
-                          final item = navCards[index];
-                          return _NavCard(icon: item.$1, label: item.$2, color: item.$3, backgroundImageUrl: item.$4, onTap: item.$5, compact: isCompact);
-                        },
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
         ],
       ),
     );
@@ -309,7 +349,7 @@ class _NavCard extends StatelessWidget {
                   child: Image.network(
                     backgroundImageUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
+                    errorBuilder: (_, _, _) => Container(
                       color: color.withOpacity(0.25),
                     ),
                   ),

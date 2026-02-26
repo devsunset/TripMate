@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:flutter_quill/quill_delta.dart' as quill_delta;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -6,6 +10,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'package:travel_mate_app/app/theme.dart';
 import 'package:travel_mate_app/app/constants.dart';
+import 'package:travel_mate_app/app/responsive.dart';
 import 'package:travel_mate_app/core/services/auth_service.dart';
 import 'package:travel_mate_app/domain/entities/itinerary.dart';
 import 'package:travel_mate_app/presentation/common/app_app_bar.dart';
@@ -17,7 +22,7 @@ import 'package:travel_mate_app/presentation/common/report_button_widget.dart';
 class ItineraryDetailScreen extends StatefulWidget {
   final String itineraryId; // ID of the itinerary to display
 
-  const ItineraryDetailScreen({Key? key, required this.itineraryId}) : super(key: key);
+  const ItineraryDetailScreen({super.key, required this.itineraryId});
 
   @override
   State<ItineraryDetailScreen> createState() => _ItineraryDetailScreenState();
@@ -28,6 +33,25 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
   String? _errorMessage;
   Itinerary? _itinerary;
   String? _currentUserId;
+  quill.QuillController? _quillViewController;
+  final FocusNode _viewFocusNode = FocusNode();
+  final ScrollController _viewScrollController = ScrollController();
+
+  static bool _isQuillContent(String content) {
+    return content.trim().startsWith('[');
+  }
+
+  static quill.Document _documentFromContent(String content) {
+    if (content.trim().isEmpty) return quill.Document();
+    try {
+      final s = content.trim();
+      if (s.startsWith('[')) {
+        final list = jsonDecode(content) as List;
+        return quill.Document.fromDelta(quill_delta.Delta.fromJson(list));
+      }
+    } catch (_) {}
+    return quill.Document.fromDelta(quill_delta.Delta()..insert(content));
+  }
 
   late GoogleMapController mapController;
   Set<Marker> _markers = {};
@@ -35,6 +59,14 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
+  }
+
+  @override
+  void dispose() {
+    _quillViewController?.dispose();
+    _viewFocusNode.dispose();
+    _viewScrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -62,9 +94,19 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
       final getItinerary = Provider.of<GetItinerary>(context, listen: false);
       final fetchedItinerary = await getItinerary.execute(widget.itineraryId);
 
+      quill.QuillController? viewController;
+      if (_isQuillContent(fetchedItinerary.description)) {
+        viewController = quill.QuillController(
+          document: _documentFromContent(fetchedItinerary.description),
+          selection: const TextSelection.collapsed(offset: 0),
+        );
+      }
+
       if (mounted) {
         setState(() {
           _itinerary = fetchedItinerary;
+          _quillViewController?.dispose();
+          _quillViewController = viewController;
         _isLoading = false;
         if (_itinerary != null && _itinerary!.mapData.isNotEmpty) {
           _markers = _itinerary!.mapData
@@ -176,7 +218,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
           : _errorMessage != null
               ? Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                    padding: EdgeInsets.symmetric(horizontal: Responsive.value(context, compact: AppConstants.paddingSmall, medium: AppConstants.paddingMedium, expanded: AppConstants.paddingMedium)),
                     child: Text(
                       _errorMessage!,
                       style: TextStyle(color: AppColors.error),
@@ -192,7 +234,10 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                       ),
                     )
                   : SingleChildScrollView(
-                      padding: const EdgeInsets.all(AppConstants.paddingLarge),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: Responsive.value(context, compact: AppConstants.paddingMedium, medium: AppConstants.paddingLarge, expanded: AppConstants.paddingLarge),
+                        vertical: AppConstants.paddingMedium,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -237,10 +282,26 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                               ),
                             ),
                           const SizedBox(height: AppConstants.spacingMedium),
-                          Text(
-                            _itinerary!.description,
-                            style: Theme.of(context).textTheme.bodyLarge,
-                          ),
+                          if (_quillViewController != null)
+                            Container(
+                              width: double.infinity,
+                              alignment: Alignment.topLeft,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: quill.QuillEditor.basic(
+                                configurations: quill.QuillEditorConfigurations(
+                                  controller: _quillViewController!,
+                                  readOnly: true,
+                                  padding: EdgeInsets.zero,
+                                ),
+                                focusNode: _viewFocusNode,
+                                scrollController: _viewScrollController,
+                              ),
+                            )
+                          else
+                            Text(
+                              _itinerary!.description,
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
                           const SizedBox(height: AppConstants.spacingLarge),
                           Text(
                             '지도 보기',

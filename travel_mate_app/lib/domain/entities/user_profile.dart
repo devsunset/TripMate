@@ -1,4 +1,5 @@
 /// 사용자 프로필 엔티티(닉네임, 소개, 이미지, 성별, 연령대, 여행스타일·관심사·선호지역 등).
+library;
 import 'package:equatable/equatable.dart';
 
 class UserProfile extends Equatable {

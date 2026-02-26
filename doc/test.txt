@@ -1,188 +1,249 @@
-# TravelMate Backend API curl 테스트 결과 (전체 갱신)
-# 기준 URL: http://localhost:3000
-# 테스트 일시: 유효한 Firebase ID 토큰으로 전체 API case별 요청/응답 실행
+# TravelMate Backend API 테스트 결과 (전체 API 케이스 정리)
+# 기준 URL: http://localhost:3000 (개발) / 환경에 따라 변경
+# 테스트 일시: 2026-02 기준 갱신
 # 인증 필요 라우트: Authorization: Bearer <Firebase ID 토큰>
 
 ================================================================================
 1. 서버 상태
 ================================================================================
-요청: GET /
-curl -s http://localhost:3000/
-응답: HTTP 200
-TravelMate Backend API is running!
+GET /
+  요청: curl -s http://localhost:3000/
+  응답: HTTP 200
+  본문: TravelMate Backend API is running!
+  테스트 결과: 통과
 
 ================================================================================
-2. 인증 API
+2. 인증 API (/api/auth)
 ================================================================================
+2.1 GET /api/auth/me
+  인증: 필수 (Bearer 토큰)
+  요청(토큰 없음): curl -s http://localhost:3000/api/auth/me
+  응답: HTTP 401 | Unauthorized: 토큰이 제공되지 않았습니다.
+  테스트 결과: 통과
 
-2.1 GET /api/auth/me (유효 토큰)
-요청: curl -s -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/auth/me
-응답: HTTP 200
-{"userId":"fl2TfXCimJoGsDaB"}
+  요청(유효 토큰): curl -s -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/auth/me
+  응답: HTTP 200 | {"userId":"<백엔드_사용자_id>"}
 
-2.2 GET /api/auth/me (토큰 없음)
-요청: curl -s http://localhost:3000/api/auth/me
-응답: HTTP 401
-Unauthorized: 토큰이 제공되지 않았습니다.
+2.2 POST /api/auth/register
+  Body: { "idToken": "<Firebase ID Token>" }
+  요청(body 없음): curl -s -X POST -H "Content-Type: application/json" -d '{}' http://localhost:3000/api/auth/register
+  응답: HTTP 400 | {"message":"Firebase ID 토큰이 필요합니다."}
+  테스트 결과: 통과
 
-2.3 POST /api/auth/register (body 없음)
-요청: curl -s -X POST -H "Content-Type: application/json" -d '{}' http://localhost:3000/api/auth/register
-응답: HTTP 400
-{"message":"Firebase ID 토큰이 필요합니다."}
+  요청(잘못된 idToken): curl -s -X POST -H "Content-Type: application/json" -d '{"idToken":"invalid"}' ...
+  응답: HTTP 401 | {"message":"유효하지 않거나 만료된 ID 토큰입니다."}
+  테스트 결과: 통과
 
-2.4 POST /api/auth/register (잘못된 idToken)
-요청: curl -s -X POST -H "Content-Type: application/json" -d '{"idToken":"invalid"}' http://localhost:3000/api/auth/register
-응답: HTTP 401
-{"message":"유효하지 않거나 만료된 ID 토큰입니다."}
+  요청(유효 idToken): 사용자 생성 또는 기존 사용자 반환. HTTP 200 + userId 등.
 
-2.5 POST /api/auth/login (body 없음)
-요청: curl -s -X POST -H "Content-Type: application/json" -d '{}' http://localhost:3000/api/auth/login
-응답: HTTP 400
-{"message":"Firebase ID 토큰이 필요합니다."}
+2.3 POST /api/auth/login
+  Body: { "idToken": "<Firebase ID Token>" }
+  요청(body 없음): HTTP 400 | {"message":"Firebase ID 토큰이 필요합니다."}
+  테스트 결과: 통과
 
 ================================================================================
 3. 보호 라우트 테스트
 ================================================================================
-요청: GET /api/protected (유효 토큰)
-curl -s -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/protected
-응답: HTTP 200
-{"message":"보호된 라우트 접근 성공","user":{...}}
+GET /api/protected
+  인증: 필수
+  요청(토큰 없음): HTTP 401 | Unauthorized: 토큰이 제공되지 않았습니다.
+  테스트 결과: 통과
+  요청(유효 토큰): HTTP 200 | {"message":"보호된 라우트 접근 성공","user":{...}}
 
 ================================================================================
-4. 사용자·프로필 API
+4. 사용자·프로필 API (/api/users)
 ================================================================================
-
-4.1 GET /api/users/search?limit=2
-요청: curl -s -H "Authorization: Bearer <TOKEN>" "http://localhost:3000/api/users/search?limit=2"
-응답: HTTP 200
-{"total":0,"limit":2,"offset":0,"users":[]}
+4.1 GET /api/users/search
+  인증: 필수
+  Query: destination?, keyword?, gender?, ageRange?, travelStyles?, interests?, limit?, offset?
+  요청(토큰 없음): HTTP 401
+  테스트 결과: 통과
+  응답(유효 토큰): HTTP 200 | {"users":[...], "total", "limit", "offset"}
 
 4.2 GET /api/users/:userId/profile
-요청: curl -s -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/users/fl2TfXCimJoGsDaB/profile
-응답: HTTP 200
-{"userProfile":{"id":1,"userId":"fl2TfXCimJoGsDaB","nickname":"ok","bio":"test",...}}
+  인증: 필수 (Bearer)
+  응답: HTTP 200 | userProfile (id, userId, nickname, bio, profileImageUrl, gender, ageRange, travelStyles, interests, preferredDestinations 등)
 
 4.3 PATCH /api/users/:userId/profile
-요청: curl -s -X PATCH -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"bio":"test bio"}' http://localhost:3000/api/users/fl2TfXCimJoGsDaB/profile
-응답: HTTP 200
-{"message":"프로필이 수정되었습니다.","userProfile":{...}}
+  인증: 필수. 본인만 수정 가능.
+  Body: nickname?, bio?, profileImageUrl?, gender?, ageRange?, travelStyles?, interests?, preferredDestinations?
+  응답: HTTP 200 | {"message":"프로필이 수정되었습니다.","userProfile":{...}}
+
+4.4 POST /api/users/:userId/profile/image
+  인증: 필수. Body에 profileImageUrl 등 전달 (이미지 URL 업데이트).
+  응답: HTTP 200
+
+4.5 DELETE /api/users/:userId
+  인증: 필수. 본인만 탈퇴 가능. Firebase Auth 및 MariaDB 사용자·관련 데이터 삭제.
+  응답: HTTP 200 또는 204
 
 ================================================================================
-5. 게시글 API
+5. 게시글 API (/api/posts)
 ================================================================================
+5.1 GET /api/posts
+  인증: 필수
+  Query: category?, search?, limit?, offset?
+  요청(토큰 없음): HTTP 401
+  테스트 결과: 통과
+  응답(유효 토큰): HTTP 200 | {"total", "limit", "offset", "posts":[...]} (post에 Author.UserProfile.nickname 포함)
 
-5.1 GET /api/posts?limit=2
-요청: curl -s -H "Authorization: Bearer <TOKEN>" "http://localhost:3000/api/posts?limit=2"
-응답: HTTP 200
-{"total":1,"limit":2,"offset":0,"posts":[...]}
+5.2 GET /api/posts/:postId
+  인증: 필수
+  응답: HTTP 200 | {"post":{...}} (Author, Category, Author.UserProfile.nickname 포함). 없으면 404.
 
-5.2 GET /api/posts/1
-요청: curl -s -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/posts/1
-응답: HTTP 200
-{"post":{"id":1,"authorId":"fl2TfXCimJoGsDaB","title":"Test Post",...,"Category":{"name":"자유 게시판"}}}
+5.3 POST /api/posts
+  인증: 필수
+  Body: title, content, category, imageUrls? (카테고리는 post_categories.name 기준)
+  응답: HTTP 201 | {"message":"게시글이 작성되었습니다.","post":{...}}
 
-5.3 POST /api/posts (생성)
-요청: curl -s -X POST -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"title":"Test Post","content":"Hello world","category":"자유 게시판"}' http://localhost:3000/api/posts
-응답: HTTP 201
-{"message":"게시글이 작성되었습니다.","post":{"id":1,"authorId":"fl2TfXCimJoGsDaB",...}}
+5.4 PATCH /api/posts/:postId
+  인증: 필수. 작성자만 수정 가능.
+  Body: title?, content?, category?, imageUrls?
+  응답: HTTP 200 | {"message":"게시글이 수정되었습니다.","post":{...}}
 
-5.4 PATCH /api/posts/1
-요청: curl -s -X PATCH -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"title":"Test Post Updated","content":"Hello"}' http://localhost:3000/api/posts/1
-응답: HTTP 200
-{"message":"게시글이 수정되었습니다.","post":{...}}
+5.5 DELETE /api/posts/:postId
+  인증: 필수. 작성자만 삭제 가능.
+  응답: HTTP 204
 
 ================================================================================
-6. 댓글 API
+6. 댓글 API (/api/comments)
 ================================================================================
-
-6.1 GET /api/comments?postId=1
-요청: curl -s -H "Authorization: Bearer <TOKEN>" "http://localhost:3000/api/comments?postId=1"
-응답: HTTP 200
-{"comments":[]}
+6.1 GET /api/comments
+  인증: 필수
+  Query: postId 또는 itineraryId (필수 하나)
+  요청(토큰 없음): HTTP 401
+  테스트 결과: 통과
+  요청(postId=1, 유효 토큰): HTTP 200 | {"comments":[...]} (각 댓글에 Author.id, Author.UserProfile.nickname 포함, Replies 중첩)
 
 6.2 POST /api/comments
-요청: curl -s -X POST -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"postId":1,"content":"Nice post!"}' http://localhost:3000/api/comments
-참고: 게시글/일정 조회 시 Author include 추가 및 parentComment.Author 안전 접근 적용. 서버 재시작 후 HTTP 201 예상. (이전 500: parentContent.Author 미포함)
+  인증: 필수
+  Body: content (필수), postId?, itineraryId?, parentCommentId?
+  응답: HTTP 201 | {"message":"댓글이 등록되었습니다.","comment":{...}} (comment에 Author+UserProfile 포함)
+
+6.3 PATCH /api/comments/:commentId
+  인증: 필수. 작성자만 수정 가능.
+  Body: content
+  응답: HTTP 200 | {"message":"댓글이 수정되었습니다.","comment":{...}}
+
+6.4 DELETE /api/comments/:commentId
+  인증: 필수. 작성자만 삭제 가능.
+  요청(토큰 없음): HTTP 401
+  테스트 결과: 통과
+  응답: HTTP 204
 
 ================================================================================
-7. 채팅 API
+7. 채팅 API (/api/chat)
 ================================================================================
-
 7.1 GET /api/chat/rooms
-요청: curl -s -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/chat/rooms
-응답: HTTP 200
-{"chatRooms":[]}
+  인증: 필수
+  응답: HTTP 200 | {"chatRooms":[...]} (partnerNickname, partnerProfileImageUrl, lastMessage 등)
 
-7.2 POST /api/chat/room (존재하지 않는 상대)
-요청: curl -s -X POST -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"partnerId":"nonexistent_user_999"}' http://localhost:3000/api/chat/room
-응답: HTTP 404
-{"message":"사용자 또는 상대를 찾을 수 없습니다."}
-
-================================================================================
-8. 일정 API
-================================================================================
-
-8.1 GET /api/itineraries?limit=2
-요청: curl -s -H "Authorization: Bearer <TOKEN>" "http://localhost:3000/api/itineraries?limit=2"
-응답: HTTP 200
-{"total":1,"limit":2,"offset":0,"itineraries":[...]}
-
-8.2 GET /api/itineraries/1
-요청: curl -s -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/itineraries/1
-응답: HTTP 200
-{"itinerary":{"id":1,"authorId":"fl2TfXCimJoGsDaB","title":"Trip",...,"Days":[]}}
-
-8.3 POST /api/itineraries (생성)
-요청: curl -s -X POST -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"title":"Trip","description":"Test","startDate":"2026-03-01","endDate":"2026-03-05"}' http://localhost:3000/api/itineraries
-응답: HTTP 201
-{"message":"일정이 생성되었습니다.","itinerary":{"id":1,...}}
+7.2 POST /api/chat/room
+  인증: 필수
+  Body: { "partnerId": "<상대방 백엔드 userId>" }
+  응답: 기존 방 있으면 200 + 해당 방, 없으면 생성 후 201. 상대 없으면 404.
 
 ================================================================================
-9. 좋아요·북마크 API
+8. 일정 API (/api/itineraries)
 ================================================================================
+8.1 GET /api/itineraries
+  인증: 필수
+  Query: search?, limit?, offset?
+  응답: HTTP 200 | {"total", "limit", "offset", "itineraries":[...]} (Author.UserProfile.nickname 포함)
 
+8.2 GET /api/itineraries/:itineraryId
+  인증: 필수
+  응답: HTTP 200 | {"itinerary":{..., "Days":[...]}} (Author, Author.UserProfile.nickname 포함). 없으면 404.
+
+8.3 POST /api/itineraries
+  인증: 필수
+  Body: title, description, startDate, endDate, imageUrls?, mapData?, days? (일차·활동 중첩)
+  응답: HTTP 201 | {"message":"일정이 생성되었습니다.","itinerary":{...}}
+
+8.4 PATCH /api/itineraries/:itineraryId
+  인증: 필수. 작성자만 수정 가능.
+  Body: title?, description?, startDate?, endDate?, imageUrls?, mapData?, days?
+  응답: HTTP 200
+
+8.5 DELETE /api/itineraries/:itineraryId
+  인증: 필수. 작성자만 삭제 가능.
+  응답: HTTP 204
+
+================================================================================
+9. 좋아요·북마크 API (/api/interactions)
+================================================================================
 9.1 POST /api/interactions/toggleLike
-요청: curl -s -X POST -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"contentId":1,"contentType":"post"}' http://localhost:3000/api/interactions/toggleLike
-참고: 현재 DB의 likes 테이블이 (userId, postId, itineraryId) 복합 PK라서 PK 컬럼에 null 불가. 게시글만 좋아요 시 itineraryId=null 삽입이 거부되어 HTTP 500 발생. 스키마 변경(대리 키 + 유니크 제약) 필요.
+  인증: 필수
+  Body: { "contentId": <number>, "contentType": "post" | "itinerary" }
+  응답: HTTP 200 | {"message":"좋아요를 눌렀습니다.|좋아요를 취소했습니다.","isLiked": true|false, "likeCountChange": 1|-1}
+  비고: DB 스키마가 doc/travel_mate.sql 기준으로 likes 테이블에 대리 키 id + (userId, postId)/(userId, itineraryId) 유니크 적용됨. 게시글만/일정만 좋아요 시 정상 동작.
 
 9.2 POST /api/interactions/toggleBookmark
-동일 이슈로 HTTP 500. bookmarks 테이블도 동일.
+  인증: 필수
+  Body: { "contentId": <number>, "contentType": "post" | "itinerary" }
+  응답: HTTP 200 | {"message":"Bookmarked successfully|Unbookmarked successfully","isBookmarked": true|false}
 
 ================================================================================
-10. FCM API
+10. 쪽지 API (/api/messages)
 ================================================================================
-
-10.1 POST /api/fcm/token
-요청: curl -s -X POST -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"token":"test_fcm_token_123","deviceType":"web"}' http://localhost:3000/api/fcm/token
-응답: HTTP 200
-{"message":"FCM 토큰이 등록되었습니다.","fcmToken":{...}}
-
-10.2 DELETE /api/fcm/token
-요청: curl -s -X DELETE -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"token":"test_fcm_token_123"}' http://localhost:3000/api/fcm/token
-응답: HTTP 204 (body 없음)
+10.1 POST /api/messages/private
+  인증: 필수
+  Body: { "receiverId": "<userId>", "content": "<텍스트>" }
+  응답: HTTP 201 등. 수신자에게 FCM 푸시 발송.
 
 ================================================================================
-11. 신고 API
+11. FCM API (/api/fcm)
 ================================================================================
+11.1 POST /api/fcm/token
+  인증: 필수
+  Body: { "token": "<FCM 디바이스 토큰>", "deviceType"?: "web"|"android"|"ios" }
+  응답: HTTP 200 | {"message":"FCM 토큰이 등록되었습니다.","fcmToken":{...}}
 
-11.1 POST /api/reports/submit
-요청: curl -s -X POST -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"entityType":"post","entityId":"1","reportType":"spam","reason":"test"}' http://localhost:3000/api/reports/submit
-응답: HTTP 201
-{"message":"신고가 접수되었습니다.","report":{...}}
-
-================================================================================
-12. 업로드 API (인증 필요, multipart)
-================================================================================
-POST /api/upload/profile, /api/upload/post, /api/upload/itinerary
-multipart 필드: image. 토큰 없으면 HTTP 401.
+11.2 DELETE /api/fcm/token
+  인증: 필수
+  Body: { "token": "<FCM 디바이스 토큰>" }
+  응답: HTTP 204
 
 ================================================================================
-13. 테스트 시 적용한 소스 수정
+12. 신고 API (/api/reports)
 ================================================================================
-- commentController.js: addComment 시 Post/Itinerary 조회에 Author include 추가. parentContent.Author 및 parentComment.Author 안전 접근(optional chaining) 적용. 서버 재시작 후 POST /api/comments 정상 동작 예상.
-- likes/bookmarks 500: DB 스키마에서 복합 PK (userId, postId, itineraryId) 때문에 post만/일정만 좋아요 시 null 삽입 불가. doc/migration_likes_bookmarks_pk.sql 실행 후 200 정상 응답 가능.
+12.1 POST /api/reports/submit
+  인증: 필수
+  Body: entityType (post|itinerary|comment|user), entityId (문자열), reportType, reason?
+  응답: HTTP 201 | {"message":"신고가 접수되었습니다.","report":{...}}
+
+================================================================================
+13. 업로드 API (/api/upload)
+================================================================================
+13.1 POST /api/upload/profile
+  인증: 필수. multipart/form-data, 필드명: image.
+  응답: HTTP 200 | { "imageUrl": "<uploads/... URL>" }. 토큰 없으면 401.
+
+13.2 POST /api/upload/post
+  인증: 필수. multipart/form-data, 필드명: image.
+  응답: HTTP 200 | { "imageUrl": "..." }
+
+13.3 POST /api/upload/itinerary
+  인증: 필수. multipart/form-data, 필드명: image.
+  응답: HTTP 200 | { "imageUrl": "..." }
 
 ================================================================================
 14. 토큰 얻는 방법
 ================================================================================
-앱 실행 → Google 로그인 → 설정 → 계정 설정 → "API 테스트용 토큰 복사" → curl 시 -H "Authorization: Bearer <붙여넣기>"
+앱 실행 → Google 로그인 → 설정 → 계정 설정 → "API 테스트용 토큰 복사" (해당 버튼이 있으면) → curl 시 -H "Authorization: Bearer <붙여넣기>"
+또는 Firebase Auth에서 idToken 획득 후 동일하게 Bearer 헤더에 넣어 사용.
+
+================================================================================
+15. 라우트 요약 (현행)
+================================================================================
+/api/auth       : POST /register, POST /login, GET /me
+/api/users      : GET /search, GET /:userId/profile, PATCH /:userId/profile, POST /:userId/profile/image, DELETE /:userId
+/api/posts      : GET /, GET /:postId, POST /, PATCH /:postId, DELETE /:postId
+/api/itineraries: GET /, GET /:itineraryId, POST /, PATCH /:itineraryId, DELETE /:itineraryId
+/api/comments   : GET /, POST /, PATCH /:commentId, DELETE /:commentId
+/api/chat       : GET /rooms, POST /room
+/api/interactions: POST /toggleLike, POST /toggleBookmark
+/api/messages   : POST /private
+/api/fcm        : POST /token, DELETE /token
+/api/reports    : POST /submit
+/api/upload     : POST /profile, POST /post, POST /itinerary

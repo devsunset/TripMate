@@ -11,7 +11,7 @@ import 'package:travel_mate_app/domain/usecases/get_user_profile.dart';
 
 /// 현재 사용자 프로필 상세·편집 진입 화면.
 class ProfileDetailScreen extends StatefulWidget {
-  const ProfileDetailScreen({Key? key}) : super(key: key);
+  const ProfileDetailScreen({super.key});
 
   @override
   State<ProfileDetailScreen> createState() => _ProfileDetailScreenState();
@@ -86,7 +86,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
             child: Image.network(
               'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800',
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => const ColoredBox(color: Color(0xFF1E1E32)),
+              errorBuilder: (_, _, _) => const ColoredBox(color: Color(0xFF1E1E32)),
             ),
           ),
           Positioned.fill(

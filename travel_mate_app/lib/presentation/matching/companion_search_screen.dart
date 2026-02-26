@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'package:travel_mate_app/app/theme.dart';
 import 'package:travel_mate_app/app/constants.dart';
+import 'package:travel_mate_app/app/responsive.dart';
 import 'package:travel_mate_app/domain/entities/user_profile.dart';
 import 'package:travel_mate_app/presentation/common/app_app_bar.dart';
 import 'package:travel_mate_app/domain/usecases/search_companions_usecase.dart';
@@ -11,7 +12,7 @@ import 'package:travel_mate_app/presentation/common/empty_state_widget.dart';
 
 /// 동행 검색 화면. 목적지·성별·연령 등 필터로 프로필 검색.
 class CompanionSearchScreen extends StatefulWidget {
-  const CompanionSearchScreen({Key? key}) : super(key: key);
+  const CompanionSearchScreen({super.key});
 
   @override
   State<CompanionSearchScreen> createState() => _CompanionSearchScreenState();
@@ -122,7 +123,10 @@ class _CompanionSearchScreenState extends State<CompanionSearchScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(AppConstants.paddingMedium),
+            padding: EdgeInsets.symmetric(
+              horizontal: Responsive.value(context, compact: AppConstants.paddingSmall, medium: AppConstants.paddingMedium, expanded: AppConstants.paddingMedium),
+              vertical: AppConstants.paddingMedium,
+            ),
             child: Column(
               children: [
                 TextFormField(
@@ -147,7 +151,7 @@ class _CompanionSearchScreenState extends State<CompanionSearchScreen> {
                   children: [
                     Expanded(
                       child: DropdownButtonFormField<String>(
-                        value: _selectedGender != null && _genders.contains(_selectedGender) ? _selectedGender : null,
+                        initialValue: _selectedGender != null && _genders.contains(_selectedGender) ? _selectedGender : null,
                         decoration: const InputDecoration(
                           labelText: '성별',
                           prefixIcon: Icon(Icons.wc),
@@ -168,7 +172,7 @@ class _CompanionSearchScreenState extends State<CompanionSearchScreen> {
                     const SizedBox(width: AppConstants.spacingMedium),
                     Expanded(
                       child: DropdownButtonFormField<String>(
-                        value: _selectedAgeRange != null && _ageRanges.contains(_selectedAgeRange) ? _selectedAgeRange : null,
+                        initialValue: _selectedAgeRange != null && _ageRanges.contains(_selectedAgeRange) ? _selectedAgeRange : null,
                         decoration: const InputDecoration(
                           labelText: '연령대',
                           prefixIcon: Icon(Icons.timelapse),
@@ -303,7 +307,10 @@ class _CompanionSearchScreenState extends State<CompanionSearchScreen> {
                               final user = _searchResults[index];
                               final imageUrl = user.profileImageUrl;
                               return Card(
-                                margin: const EdgeInsets.symmetric(horizontal: AppConstants.paddingMedium, vertical: AppConstants.paddingSmall),
+                                margin: EdgeInsets.symmetric(
+                                  horizontal: Responsive.value(context, compact: AppConstants.paddingSmall, medium: AppConstants.paddingMedium, expanded: AppConstants.paddingMedium),
+                                  vertical: AppConstants.paddingSmall,
+                                ),
                                 elevation: 1,
                                 child: ListTile(
                                   leading: CircleAvatar(

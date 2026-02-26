@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 
 import 'package:travel_mate_app/app/theme.dart';
 import 'package:travel_mate_app/app/constants.dart';
@@ -14,11 +13,11 @@ class ReportSubmissionScreen extends StatefulWidget {
   final String reporterUserId;
 
   const ReportSubmissionScreen({
-    Key? key,
+    super.key,
     required this.entityType,
     required this.entityId,
     required this.reporterUserId,
-  }) : super(key: key);
+  });
 
   @override
   State<ReportSubmissionScreen> createState() => _ReportSubmissionScreenState();
@@ -111,7 +110,7 @@ class _ReportSubmissionScreenState extends State<ReportSubmissionScreen> {
                     ),
                     const SizedBox(height: AppConstants.spacingLarge),
                     DropdownButtonFormField<String>(
-                      value: _selectedReportType != null && _reportTypes.contains(_selectedReportType) ? _selectedReportType : null,
+                      initialValue: _selectedReportType != null && _reportTypes.contains(_selectedReportType) ? _selectedReportType : null,
                       decoration: const InputDecoration(
                         labelText: '신고 유형',
                         prefixIcon: Icon(Icons.report_problem),

@@ -1,4 +1,5 @@
 /// 채팅 메시지 발송 유스케이스.
+library;
 import 'package:travel_mate_app/domain/repositories/chat_repository.dart';
 
 class SendChatMessage {

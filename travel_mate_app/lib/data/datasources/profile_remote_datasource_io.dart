@@ -1,4 +1,5 @@
 /// 프로필 API 호출 및 백엔드 프로필 이미지 업로드 (IO/모바일).
+library;
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';

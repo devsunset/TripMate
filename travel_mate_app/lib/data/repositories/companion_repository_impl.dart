@@ -1,4 +1,5 @@
 /// 동행 검색 레포지토리 구현. API 호출 후 UserProfile 리스트 반환.
+library;
 import 'package:travel_mate_app/domain/entities/user_profile.dart';
 import 'package:travel_mate_app/domain/repositories/companion_repository.dart';
 import 'package:travel_mate_app/data/datasources/companion_search_remote_datasource.dart';

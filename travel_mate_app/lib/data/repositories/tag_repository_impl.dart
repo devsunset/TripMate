@@ -1,4 +1,5 @@
 /// 태그 레포지토리 구현. 백엔드 API 또는 로컬 데이터 위임.
+library;
 import 'package:travel_mate_app/data/models/tag_model.dart';
 import 'package:travel_mate_app/domain/repositories/tag_repository.dart';
 import 'package:flutter/foundation.dart';

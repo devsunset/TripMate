@@ -8,7 +8,6 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io' if (dart.library.html) 'package:travel_mate_app/core/io_stub/file_stub.dart';
 import 'package:travel_mate_app/core/io_stub/picked_image_widget_io.dart' if (dart.library.html) 'package:travel_mate_app/core/io_stub/picked_image_widget_web.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 import 'package:travel_mate_app/app/theme.dart';
@@ -25,7 +24,7 @@ import 'package:travel_mate_app/data/models/post_model.dart';
 class PostWriteScreen extends StatefulWidget {
   final String? postId; // Null for new post, provided for editing existing post
 
-  const PostWriteScreen({Key? key, this.postId}) : super(key: key);
+  const PostWriteScreen({super.key, this.postId});
 
   @override
   State<PostWriteScreen> createState() => _PostWriteScreenState();
@@ -39,7 +38,7 @@ class _PostWriteScreenState extends State<PostWriteScreen> {
   final ScrollController _editorScrollController = ScrollController();
 
   String? _selectedCategory;
-  List<File> _pickedImages = [];
+  final List<File> _pickedImages = [];
   List<String> _existingImageUrls = [];
   Post? _loadedPost;
 
@@ -115,7 +114,7 @@ class _PostWriteScreenState extends State<PostWriteScreen> {
     final picker = ImagePicker();
     final pickedFiles = await picker.pickMultiImage();
 
-    if (pickedFiles != null && pickedFiles.isNotEmpty) {
+    if (pickedFiles.isNotEmpty) {
       // Compress images before adding to _pickedImages
       List<File> compressedFiles = [];
       for (XFile image in pickedFiles) {
@@ -302,7 +301,7 @@ class _PostWriteScreenState extends State<PostWriteScreen> {
                     ],
                     const SizedBox(height: AppConstants.spacingMedium),
                     DropdownButtonFormField<String>(
-                      value: _selectedCategory != null && _categories.contains(_selectedCategory) ? _selectedCategory : null,
+                      initialValue: _selectedCategory != null && _categories.contains(_selectedCategory) ? _selectedCategory : null,
                       decoration: const InputDecoration(
                         labelText: '카테고리',
                         prefixIcon: Icon(Icons.category),

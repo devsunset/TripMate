@@ -1,4 +1,5 @@
 /// 여행 일정 엔티티(제목, 설명, 기간, 이미지 URL, 지도 데이터).
+library;
 import 'package:equatable/equatable.dart';
 
 class Itinerary extends Equatable {

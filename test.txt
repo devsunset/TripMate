@@ -1,0 +1,342 @@
+# TravelMate API 호출 테스트 결과
+# 테스트 일시: 2026-02-25
+# Base URL: http://localhost:3000
+# 사용 토큰: Firebase ID Token (dev sunset, devsunset@gmail.com)
+# userId (백엔드): 0lkC5UmgeidAE1ww
+
+================================================================================
+1. 서버 상태
+================================================================================
+
+[요청] GET /
+[응답] HTTP 200
+TravelMate Backend API is running!
+
+--------------------------------------------------------------------------------
+
+================================================================================
+2. 인증 (Auth)
+================================================================================
+
+[요청] POST /api/auth/register
+       Body: {"idToken":"<Firebase ID Token>"}
+[응답] HTTP 200
+{"message":"이미 등록된 사용자입니다.","user":{"id":"0lkC5UmgeidAE1ww","firebase_uid":"h1MzbEz4F7WOI0xQgCftyTHtmW93","created_at":"2026-02-25T02:12:13.000Z","updated_at":"2026-02-25T02:12:13.000Z"}}
+
+--------------------------------------------------------------------------------
+
+[요청] POST /api/auth/login
+       Body: {"idToken":"<Firebase ID Token>"}
+[응답] HTTP 200
+{"message":"로그인되었습니다.","user":{"id":"0lkC5UmgeidAE1ww","firebase_uid":"h1MzbEz4F7WOI0xQgCftyTHtmW93","created_at":"2026-02-25T02:12:13.000Z","updated_at":"2026-02-25T02:12:13.000Z"}}
+
+--------------------------------------------------------------------------------
+
+[요청] GET /api/auth/me
+       Header: Authorization: Bearer <token>
+[응답] HTTP 200
+{"userId":"0lkC5UmgeidAE1ww"}
+
+--------------------------------------------------------------------------------
+
+[요청] GET /api/auth/me (토큰 없음)
+[응답] HTTP 401
+Unauthorized: 토큰이 제공되지 않았습니다.
+
+--------------------------------------------------------------------------------
+
+================================================================================
+3. 보호 라우트
+================================================================================
+
+[요청] GET /api/protected
+       Header: Authorization: Bearer <token>
+[응답] HTTP 200
+{"message":"보호된 라우트 접근 성공","user":{"name":"dev sunset","picture":"...","iss":"https://securetoken.google.com/travelmate-9b394","aud":"travelmate-9b394","user_id":"h1MzbEz4F7WOI0xQgCftyTHtmW93","email":"devsunset@gmail.com",...}}
+
+--------------------------------------------------------------------------------
+
+================================================================================
+4. 사용자·프로필 (Users)
+================================================================================
+
+[요청] GET /api/users/search?limit=3
+       Header: Authorization: Bearer <token>
+[응답] HTTP 200
+{"total":0,"limit":3,"offset":0,"users":[]}
+
+--------------------------------------------------------------------------------
+
+[요청] GET /api/users/0lkC5UmgeidAE1ww/profile
+       Header: Authorization: Bearer <token>
+[응답] HTTP 200
+{"userProfile":{"id":1,"userId":"0lkC5UmgeidAE1ww","nickname":"ok","bio":"test","profileImageUrl":"","gender":"남성","ageRange":"40대","travelStyles":["모험","휴양","문화"],"interests":["해변","예술"],"preferredDestinations":["seoul"],"created_at":"...","updated_at":"..."}}
+
+--------------------------------------------------------------------------------
+
+[요청] PATCH /api/users/0lkC5UmgeidAE1ww/profile
+       Header: Authorization: Bearer <token>
+       Body: {"nickname":"dev sunset","bio":"API test"}
+[응답] HTTP 200
+{"message":"프로필이 수정되었습니다.","userProfile":{"id":1,"userId":"0lkC5UmgeidAE1ww","nickname":"dev sunset","bio":"API test",...}}
+
+--------------------------------------------------------------------------------
+
+[요청] POST /api/upload/profile
+       Header: Authorization: Bearer <token>
+       Body: multipart/form-data, field "image" (파일)
+[응답] HTTP 200
+{"message":"프로필 이미지가 업로드되었습니다.","imageUrl":"http://localhost:3000/uploads/profile/.../1771993894392.jpg"}
+
+--------------------------------------------------------------------------------
+
+================================================================================
+5. 게시글 (Posts)
+================================================================================
+
+[요청] GET /api/posts?limit=3
+       Header: Authorization: Bearer <token>
+[응답] HTTP 200
+{"total":0,"limit":3,"offset":0,"posts":[]}
+(테스트 중 POST 후 total:1, posts 배열 반환)
+
+--------------------------------------------------------------------------------
+
+[요청] GET /api/posts/1
+       Header: Authorization: Bearer <token>
+[응답] HTTP 200
+{"post":{"id":1,"authorId":"0lkC5UmgeidAE1ww","categoryId":1,"title":"curl test","content":"[{\"insert\":\"test\\n\"}]","imageUrls":[],"created_at":"...","Author":{"id":"...","UserProfile":{"nickname":"dev sunset"}},"Category":{"name":"자유 게시판"}}}
+
+--------------------------------------------------------------------------------
+
+[요청] GET /api/posts/99999
+       Header: Authorization: Bearer <token>
+[응답] HTTP 404
+{"message":"게시글을 찾을 수 없습니다."}
+
+--------------------------------------------------------------------------------
+
+[요청] POST /api/posts
+       Header: Authorization: Bearer <token>
+       Body: {"title":"curl test","content":"[{\"insert\":\"test\\n\"}]","category":"자유 게시판","imageUrls":[]}
+[응답] HTTP 201
+{"message":"게시글이 작성되었습니다.","post":{"id":1,"authorId":"0lkC5UmgeidAE1ww","categoryId":1,"title":"curl test","content":"...","imageUrls":[],"created_at":"..."}}
+※ category는 DB 시드의 카테고리명과 일치해야 함 (예: 자유 게시판, 여행 후기). "질문" 사용 시 404 카테고리를 찾을 수 없습니다.
+
+--------------------------------------------------------------------------------
+
+[요청] POST /api/posts (body 비어 있음)
+       Body: {}
+[응답] HTTP 400
+{"message":"제목, 내용, 카테고리가 필요합니다."}
+
+--------------------------------------------------------------------------------
+
+[요청] PATCH /api/posts/1
+       Header: Authorization: Bearer <token>
+       Body: {"title":"curl test updated","content":"[{\"insert\":\"updated\\n\"}]","category":"자유 게시판"}
+[응답] HTTP 200
+{"message":"게시글이 수정되었습니다.","post":{"id":1,"title":"curl test updated",...}}
+
+--------------------------------------------------------------------------------
+
+================================================================================
+6. 일정 (Itineraries)
+================================================================================
+
+[요청] GET /api/itineraries?limit=3
+       Header: Authorization: Bearer <token>
+[응답] HTTP 200
+{"total":0,"limit":3,"offset":0,"itineraries":[]}
+(테스트 중 POST 후 total:1, itineraries 배열 반환)
+
+--------------------------------------------------------------------------------
+
+[요청] GET /api/itineraries/1
+       Header: Authorization: Bearer <token>
+[응답] HTTP 200
+{"itinerary":{"id":1,"authorId":"0lkC5UmgeidAE1ww","title":"curl test itinerary","description":"[{\"insert\":\"desc\\n\"}]","startDate":"2026-03-01","endDate":"2026-03-03","imageUrls":[],"mapData":[],"Author":{"id":"...","UserProfile":{"nickname":"dev sunset"}},"Days":[]}}
+
+--------------------------------------------------------------------------------
+
+[요청] POST /api/itineraries
+       Header: Authorization: Bearer <token>
+       Body: {"title":"curl test itinerary","description":"[{\"insert\":\"desc\\n\"}]","startDate":"2026-03-01","endDate":"2026-03-03","imageUrls":[],"mapData":[]}
+[응답] HTTP 201
+{"message":"일정이 생성되었습니다.","itinerary":{"id":1,"authorId":"0lkC5UmgeidAE1ww","title":"curl test itinerary","description":"...","startDate":"2026-03-01","endDate":"2026-03-03","imageUrls":[],"mapData":[],"created_at":"...","updated_at":"..."}}
+
+--------------------------------------------------------------------------------
+
+[요청] PATCH /api/itineraries/1
+       Header: Authorization: Bearer <token>
+       Body: {"title":"curl test itinerary updated","description":"[{\"insert\":\"updated desc\\n\"}]","startDate":"2026-03-01","endDate":"2026-03-05"}
+[응답] HTTP 200
+{"message":"일정이 수정되었습니다.","itinerary":{"id":1,"title":"curl test itinerary updated",...}}
+
+--------------------------------------------------------------------------------
+
+================================================================================
+7. 댓글 (Comments)
+================================================================================
+
+[요청] GET /api/comments?postId=1
+       Header: Authorization: Bearer <token>
+[응답] HTTP 200
+{"comments":[{"id":1,"authorId":"...","postId":1,"itineraryId":null,"parentCommentId":null,"content":"...","created_at":"...","Author":{"id":"...","UserProfile":{"nickname":"..."}},"Replies":[]}]}
+※ 대댓글(Replies) 작성자 정보는 별도 쿼리로 채워 동일 User 테이블 별칭 충돌 방지
+
+--------------------------------------------------------------------------------
+
+[요청] GET /api/comments?itineraryId=1
+       Header: Authorization: Bearer <token>
+[응답] HTTP 200
+{"comments":[{"id":1,"authorId":"0lkC5UmgeidAE1ww","postId":null,"itineraryId":1,"parentCommentId":null,"content":"updated comment","created_at":"...","Author":{"id":"0lkC5UmgeidAE1ww","UserProfile":{"nickname":"dev sunset"}},"Replies":[]}]}
+
+--------------------------------------------------------------------------------
+
+[요청] POST /api/comments
+       Header: Authorization: Bearer <token>
+       Body: {"itineraryId":1,"content":"curl test comment"}
+[응답] HTTP 201
+{"message":"댓글이 등록되었습니다.","comment":{"id":1,"authorId":"0lkC5UmgeidAE1ww","postId":null,"itineraryId":1,"parentCommentId":null,"content":"curl test comment","created_at":"...","Author":{"id":"...","UserProfile":{"nickname":"dev sunset"}}}}
+
+--------------------------------------------------------------------------------
+
+[요청] PATCH /api/comments/1
+       Header: Authorization: Bearer <token>
+       Body: {"content":"updated comment"}
+[응답] HTTP 200
+{"message":"댓글이 수정되었습니다.","comment":{"id":1,"content":"updated comment",...}}
+
+--------------------------------------------------------------------------------
+
+================================================================================
+8. 좋아요·북마크 (Interactions)
+================================================================================
+
+[요청] POST /api/interactions/toggleLike
+       Header: Authorization: Bearer <token>
+       Body: {"contentId":1,"contentType":"itinerary"}
+[응답] HTTP 200
+{"message":"좋아요를 눌렀습니다.","isLiked":true,"likeCountChange":1}
+※ contentType: "post" | "itinerary", contentId는 해당 게시글/일정 id
+
+--------------------------------------------------------------------------------
+
+[요청] POST /api/interactions/toggleBookmark
+       Header: Authorization: Bearer <token>
+       Body: {"contentId":1,"contentType":"itinerary"}
+[응답] HTTP 200
+{"message":"Bookmarked successfully","isBookmarked":true}
+
+--------------------------------------------------------------------------------
+
+================================================================================
+9. 신고 (Reports)
+================================================================================
+
+[요청] POST /api/reports/submit
+       Header: Authorization: Bearer <token>
+       Body: {"entityType":"itinerary","entityId":1,"reportType":"기타","reason":"test"}
+[응답] HTTP 201
+{"message":"신고가 접수되었습니다.","report":{"id":1,"reporterUserId":"0lkC5UmgeidAE1ww","reportedItineraryId":1,"reportType":"기타","reason":"test","status":"pending",...}}
+※ entityType: user | post | itinerary | comment
+
+--------------------------------------------------------------------------------
+
+[요청] POST /api/reports/submit (동일 대상 재신고)
+       Body: {"entityType":"itinerary","entityId":1,"reportType":"기타","reason":"test2"}
+[응답] HTTP 409
+{"message":"이미 신고한 대상입니다."}
+
+--------------------------------------------------------------------------------
+
+================================================================================
+10. 채팅 (Chat)
+================================================================================
+
+[요청] GET /api/chat/rooms
+       Header: Authorization: Bearer <token>
+[응답] HTTP 200
+{"chatRooms":[]}
+(채팅 요청 후 동일 사용자로 room 생성 시 chatRooms 배열에 1건 반환)
+
+--------------------------------------------------------------------------------
+
+[요청] POST /api/chat/room
+       Header: Authorization: Bearer <token>
+       Body: {"partnerId":"0lkC5UmgeidAE1ww"}
+[응답] HTTP 201
+{"message":"채팅 요청이 완료되었습니다. 채팅 목록에서 선택해 대화하세요.","chatRoomId":"0lkC5UmgeidAE1ww_0lkC5UmgeidAE1ww","isRequestedByMe":true}
+※ partnerId는 백엔드 사용자 id (users.id)
+
+--------------------------------------------------------------------------------
+
+================================================================================
+11. 쪽지 (Messages)
+================================================================================
+
+[요청] POST /api/messages/private
+       Header: Authorization: Bearer <token>
+       Body: {"receiverId":"0lkC5UmgeidAE1ww","content":"self test"}
+[응답] HTTP 201
+{"message":{"id":1,"senderId":"0lkC5UmgeidAE1ww","receiverId":"0lkC5UmgeidAE1ww","content":"self test","isRead":false,"sent_at":"..."}}
+
+--------------------------------------------------------------------------------
+
+================================================================================
+12. FCM 토큰
+================================================================================
+
+[요청] POST /api/fcm/token
+       Header: Authorization: Bearer <token>
+       Body: {"token":"test-fcm-token-curl","deviceType":"test"}
+[응답] HTTP 200
+{"message":"FCM 토큰이 등록되었습니다.","fcmToken":{"id":1,"userId":"0lkC5UmgeidAE1ww","token":"test-fcm-token-curl","deviceType":"test","created_at":"...","updated_at":"..."}}
+
+--------------------------------------------------------------------------------
+
+[요청] DELETE /api/fcm/token
+       Header: Authorization: Bearer <token>
+       Body: {"token":"test-fcm-token-curl"}
+[응답] HTTP 204
+(본문 없음)
+
+--------------------------------------------------------------------------------
+
+================================================================================
+13. 업로드 (Upload)
+================================================================================
+
+[요청] POST /api/upload/profile
+       Header: Authorization: Bearer <token>
+       Body: multipart/form-data, field "image"
+[응답] HTTP 200
+{"message":"프로필 이미지가 업로드되었습니다.","imageUrl":"http://localhost:3000/uploads/profile/<firebase_uid>/<timestamp>.jpg"}
+
+--------------------------------------------------------------------------------
+
+[요청] POST /api/upload/post
+       Header: Authorization: Bearer <token>
+       Body: multipart/form-data, field "image"
+[응답] (동일 패턴) HTTP 200, imageUrl 반환
+
+--------------------------------------------------------------------------------
+
+[요청] POST /api/upload/itinerary
+       Header: Authorization: Bearer <token>
+       Body: multipart/form-data, field "image"
+[응답] (동일 패턴) HTTP 200, imageUrl 반환
+
+--------------------------------------------------------------------------------
+
+================================================================================
+요약
+================================================================================
+- 인증 필요: /api/auth/me, /api/protected, /api/users/*, /api/posts/*, /api/itineraries/*,
+  /api/comments/*, /api/interactions/*, /api/reports/*, /api/chat/*, /api/messages/*,
+  /api/fcm/*, /api/upload/* → Authorization: Bearer <Firebase ID Token>
+- 인증 불필요: GET /, POST /api/auth/register, POST /api/auth/login
+- 게시글 카테고리: DB 시드 기준 (자유 게시판, 여행 후기 등) name 값 사용
+- 댓글 목록 GET /api/comments: 최상위 댓글+대댓글(Replies) 반환, 대댓글 작성자(Author)는 별도 쿼리로 채움
+- 삭제 API (DELETE /api/posts/:id, DELETE /api/itineraries/:id, DELETE /api/comments/:id, DELETE /api/users/:userId)는 테스트에서 생략함. 작성자/본인만 삭제 가능 시 204 반환.

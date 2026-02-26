@@ -1,4 +1,5 @@
 /// 댓글 API 호출.
+library;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:dio/dio.dart';
 import 'package:travel_mate_app/app/constants.dart';
@@ -53,7 +54,7 @@ class CommentRemoteDataSource {
     final token = await _getIdToken();
     final body = <String, dynamic>{
       'content': content,
-      if (parentCommentId != null) 'parentCommentId': parentCommentId,
+      'parentCommentId': ?parentCommentId,
     };
     if (postId != null) body['postId'] = int.tryParse(postId) ?? postId;
     if (itineraryId != null) body['itineraryId'] = int.tryParse(itineraryId) ?? itineraryId;
@@ -82,7 +83,7 @@ class CommentRemoteDataSource {
     if (author == null) return null;
     final profile = author['UserProfile'] as Map<String, dynamic>? ?? author['userProfile'] as Map<String, dynamic>?;
     final nick = profile?['nickname'];
-    return nick == null ? null : nick.toString();
+    return nick?.toString();
   }
 
   static Comment _commentFromJson(dynamic e) {

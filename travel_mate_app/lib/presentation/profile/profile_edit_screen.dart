@@ -6,10 +6,10 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io' if (dart.library.html) 'package:travel_mate_app/core/io_stub/file_stub.dart';
 import 'package:travel_mate_app/core/io_stub/picked_image_provider_io.dart' if (dart.library.html) 'package:travel_mate_app/core/io_stub/picked_image_provider_web.dart';
 import 'package:travel_mate_app/app/theme.dart';
+import 'package:travel_mate_app/app/responsive.dart';
 import 'package:travel_mate_app/core/services/auth_service.dart';
 import 'package:travel_mate_app/app/constants.dart';
 import 'package:travel_mate_app/presentation/common/app_app_bar.dart';
-import 'package:travel_mate_app/domain/entities/user_profile.dart';
 import 'package:travel_mate_app/domain/usecases/get_user_profile.dart';
 import 'package:travel_mate_app/domain/usecases/update_user_profile.dart';
 import 'package:travel_mate_app/domain/usecases/upload_profile_image.dart';
@@ -17,7 +17,7 @@ import 'package:travel_mate_app/data/models/user_profile_model.dart';
 
 /// 프로필 수정 화면. 닉네임·소개·이미지 등 편집.
 class ProfileEditScreen extends StatefulWidget {
-  const ProfileEditScreen({Key? key}) : super(key: key);
+  const ProfileEditScreen({super.key});
 
   @override
   State<ProfileEditScreen> createState() => _ProfileEditScreenState();
@@ -175,7 +175,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(AppConstants.paddingLarge),
+              padding: EdgeInsets.symmetric(
+                horizontal: Responsive.value(context, compact: AppConstants.paddingMedium, medium: AppConstants.paddingLarge, expanded: AppConstants.paddingLarge),
+                vertical: AppConstants.paddingMedium,
+              ),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -236,7 +239,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     ),
                     const SizedBox(height: AppConstants.spacingMedium),
                     DropdownButtonFormField<String>(
-                      value: _gender != null && _genders.contains(_gender) ? _gender : null,
+                      initialValue: _gender != null && _genders.contains(_gender) ? _gender : null,
                       decoration: const InputDecoration(
                         labelText: '성별',
                         prefixIcon: Icon(Icons.wc),
@@ -256,7 +259,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     ),
                     const SizedBox(height: AppConstants.spacingMedium),
                     DropdownButtonFormField<String>(
-                      value: _ageRange != null && _ageRanges.contains(_ageRange) ? _ageRange : null,
+                      initialValue: _ageRange != null && _ageRanges.contains(_ageRange) ? _ageRange : null,
                       decoration: const InputDecoration(
                         labelText: '연령대',
                         prefixIcon: Icon(Icons.timelapse),

@@ -1,4 +1,5 @@
 /// 채팅 메시지 DTO. Firestore 문서·[ChatMessage] 엔티티 변환.
+library;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:travel_mate_app/domain/entities/chat_message.dart';
 

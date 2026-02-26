@@ -130,7 +130,7 @@ CREATE TABLE IF NOT EXISTS `itineraries` (
   `id` INT NOT NULL AUTO_INCREMENT COMMENT '일정 고유 ID',
   `authorId` VARCHAR(32) NOT NULL COMMENT '작성자 사용자 ID (users.id)',
   `title` VARCHAR(255) NOT NULL COMMENT '일정 제목',
-  `description` TEXT NOT NULL COMMENT '일정 상세 설명',
+  `description` LONGTEXT NOT NULL COMMENT '일정 상세 설명 (웹 에디터 본문, 커뮤니티 게시글과 동일)',
   `startDate` DATE NOT NULL COMMENT '여행 시작일',
   `endDate` DATE NOT NULL COMMENT '여행 종료일',
   `imageUrls` JSON COMMENT '대표 이미지 URL 목록 (백엔드 /api/upload/itinerary 반환 URL 배열)',

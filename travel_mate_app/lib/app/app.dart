@@ -1,4 +1,5 @@
 /// 루트 위젯. 로그인 상태에 따라 라우터를 동적으로 구성하고 MaterialApp.router로 표시.
+library;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:travel_mate_app/app/theme.dart';
@@ -15,12 +14,12 @@ class LikeButtonWidget extends StatefulWidget {
   final bool initialIsLiked;
 
   const LikeButtonWidget({
-    Key? key,
+    super.key,
     required this.contentType,
     required this.contentId,
     this.initialLikeCount = 0,
     this.initialIsLiked = false,
-  }) : super(key: key);
+  });
 
   @override
   State<LikeButtonWidget> createState() => _LikeButtonWidgetState();

@@ -29,6 +29,12 @@ class AppConstants {
   static const double cardRadius = 16.0;
   static const double cardRadiusLarge = 24.0;
 
+  /// 반응형용: 작은 화면에서 더 줄인 간격 (Responsive.value 등과 함께 사용).
+  static const double paddingMediumCompact = 12.0;
+  static const double paddingLargeCompact = 16.0;
+  static const double spacingMediumCompact = 12.0;
+  static const double spacingLargeCompact = 20.0;
+
   static const String appName = "TravelMate";
   static const int passwordMinLength = 8;
   static const int otpLength = 6;

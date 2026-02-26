@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:travel_mate_app/app/theme.dart';
+import 'package:travel_mate_app/app/responsive.dart';
 import 'package:travel_mate_app/core/services/auth_service.dart';
 import 'package:travel_mate_app/app/constants.dart';
 import 'package:travel_mate_app/domain/entities/chat_room_info.dart';
@@ -13,7 +14,7 @@ import 'package:travel_mate_app/presentation/common/empty_state_widget.dart';
 
 /// 채팅방 목록 화면. 신청한/신청받은 채팅방만 표시(채팅방 찾기 조건 없음).
 class ChatListScreen extends StatefulWidget {
-  const ChatListScreen({Key? key}) : super(key: key);
+  const ChatListScreen({super.key});
 
   @override
   State<ChatListScreen> createState() => _ChatListScreenState();
@@ -93,7 +94,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
                         onAction: () => context.go('/matching/search'),
                       )
                     : ListView.builder(
-                        padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingSmall),
+                        padding: EdgeInsets.only(
+                          left: Responsive.value(context, compact: AppConstants.paddingSmall, medium: AppConstants.paddingMedium, expanded: AppConstants.paddingMedium),
+                          right: Responsive.value(context, compact: AppConstants.paddingSmall, medium: AppConstants.paddingMedium, expanded: AppConstants.paddingMedium),
+                          top: AppConstants.paddingSmall,
+                          bottom: MediaQuery.paddingOf(context).bottom + 8,
+                        ),
                         itemCount: _rooms.length,
                         itemBuilder: (context, index) {
                           final room = _rooms[index];

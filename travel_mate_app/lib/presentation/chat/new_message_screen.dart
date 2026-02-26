@@ -13,10 +13,10 @@ class NewMessageScreen extends StatefulWidget {
   final String? receiverNickname;
 
   const NewMessageScreen({
-    Key? key,
+    super.key,
     required this.receiverUserId,
     this.receiverNickname,
-  }) : super(key: key);
+  });
 
   @override
   State<NewMessageScreen> createState() => _NewMessageScreenState();

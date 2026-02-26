@@ -26,20 +26,48 @@ exports.getComments = async (req, res, next) => {
     }
 
     const authorInclude = { model: User, as: 'Author', attributes: ['id'], include: [{ model: UserProfile, attributes: ['nickname'], required: false }] };
+    // 대댓글은 Author 없이 조회 후, 작성자 정보만 별도 쿼리로 채움 (동일 User 테이블 별칭 충돌 방지)
     const comments = await Comment.findAll({
       where: whereConditions,
       include: [
         authorInclude,
-        {
-          model: Comment,
-          as: 'Replies',
-          include: [authorInclude],
-        },
+        { model: Comment, as: 'Replies', order: [['created_at', 'ASC']] },
       ],
       order: [['created_at', 'ASC']],
     });
 
-    res.status(200).json({ comments });
+    const replyAuthorIds = [];
+    comments.forEach((c) => {
+      (c.Replies || []).forEach((r) => {
+        if (r.authorId) replyAuthorIds.push(r.authorId);
+      });
+    });
+    const uniqueAuthorIds = [...new Set(replyAuthorIds)];
+    let replyAuthorsMap = {};
+    if (uniqueAuthorIds.length > 0) {
+      const replyAuthors = await User.findAll({
+        where: { id: uniqueAuthorIds },
+        attributes: ['id'],
+        include: [{ model: UserProfile, attributes: ['nickname'], required: false }],
+      });
+      replyAuthorsMap = replyAuthors.reduce((acc, u) => {
+        acc[u.id] = { id: u.id, UserProfile: u.UserProfile };
+        return acc;
+      }, {});
+    }
+
+    const normalized = comments.map((c) => {
+      const plain = c.toJSON ? c.toJSON() : c;
+      if (plain.Replies && Array.isArray(plain.Replies)) {
+        plain.Replies = plain.Replies.map((r) => {
+          const reply = { ...r };
+          reply.Author = replyAuthorsMap[r.authorId] ? { id: r.authorId, UserProfile: replyAuthorsMap[r.authorId].UserProfile } : null;
+          return reply;
+        });
+      }
+      return plain;
+    });
+    res.status(200).json({ comments: normalized });
   } catch (error) {
     console.error('getComments 오류:', error);
     next(error);

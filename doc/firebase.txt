@@ -246,47 +246,16 @@ void main() async {
 
 #### 3.3. 환경 변수 설정
 1.  `travel_mate_backend` 폴더에 `.env` 파일을 생성합니다.
-2.  `.env` 파일에 서비스 계정 키 파일의 경로를 지정하는 환경 변수를 추가합니다.
+2.  `.env` 파일에 서비스 계정 키 파일 경로를 지정합니다.
     ```
-    GOOGLE_APPLICATION_CREDENTIALS="./serviceAccountKey.json"
+    FIREBASE_SERVICE_ACCOUNT_KEY_PATH=./serviceAccountKey.json
     ```
-    (경로는 `.env` 파일 위치 기준입니다)
+    (또는 `FIREBASE_SERVICE_ACCOUNT_KEY_JSON` 환경 변수에 JSON 문자열을 직접 넣을 수 있음. 경로는 `.env` 파일 위치 기준)
 
-#### 3.4. `app.js` 파일 수정
--   `travel_mate_backend/src/app.js` 파일의 상단에 Firebase Admin SDK 초기화 코드를 추가합니다.
-
-```javascript
-// travel_mate_backend/src/app.js
-
-// .env 파일의 환경 변수를 로드합니다.
-require('dotenv').config();
-
-const express = require('express');
-const admin = require('firebase-admin');
-
-// --- Firebase Admin SDK 초기화 시작 ---
-try {
-  // GOOGLE_APPLICATION_CREDENTIALS 환경 변수에 지정된 경로의 키 파일로 초기화
-  admin.initializeApp({
-    credential: admin.credential.applicationDefault(),
-  });
-  console.log('Firebase Admin SDK 초기화 성공');
-} catch (error) {
-  console.error('Firebase Admin SDK 초기화 실패:', error);
-  process.exit(1);
-}
-// --- Firebase Admin SDK 초기화 종료 ---
-
-const app = express();
-
-// ... 기존 app.js 코드 (미들웨어, 라우터 설정 등) ...
-
-// 예시: 아래와 같이 다른 컨트롤러나 서비스에서 admin SDK를 사용할 수 있습니다.
-// const db = admin.firestore();
-// const auth = admin.auth();
-
-module.exports = app;
-
-```
+#### 3.4. app.js (현행 구현)
+-   `travel_mate_backend/src/app.js` 에서 Firebase Admin SDK는 이미 다음 방식으로 초기화되어 있습니다.
+-   `dotenv`로 `.env` 로드 후, `FIREBASE_SERVICE_ACCOUNT_KEY_PATH`(또는 `FIREBASE_SERVICE_ACCOUNT_KEY_JSON`)로 서비스 계정을 읽어 `admin.credential.cert(serviceConfig)` 로 초기화합니다.
+-   서버 기동 시 "Firebase 서비스 계정 키를 파일에서 로드했습니다" 또는 "환경 변수에서 로드했습니다" 로그로 확인할 수 있습니다.
+-   별도 `module.exports` 없이 앱 진입 시 `app.listen(PORT)` 로 서버가 시작됩니다.
 
 이제 Flutter 앱과 Node.js 백엔드 모두 Firebase와 통신할 준비가 완료되었습니다. 각 애플리케이션을 다시 시작하여 변경 사항을 적용하세요.

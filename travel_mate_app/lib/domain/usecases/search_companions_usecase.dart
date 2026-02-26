@@ -1,4 +1,5 @@
 /// 동행 검색 유스케이스
+library;
 import 'package:travel_mate_app/domain/entities/user_profile.dart';
 import 'package:travel_mate_app/domain/repositories/companion_repository.dart';
 

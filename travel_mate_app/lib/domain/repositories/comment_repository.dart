@@ -1,4 +1,5 @@
 /// 댓글 조회·작성·삭제 추상 레포지토리.
+library;
 import 'package:travel_mate_app/domain/entities/comment.dart';
 
 abstract class CommentRepository {

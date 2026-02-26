@@ -25,7 +25,7 @@ const LIMITS = {
 
   // itineraries
   itineraryTitle: 255,
-  itineraryDescription: 65535, // TEXT
+  itineraryDescription: 4 * 1024 * 1024, // LONGTEXT ~4MB (웹 에디터 본문, 커뮤니티와 동일)
 
   // itinerary_activities
   activityTime: 255,

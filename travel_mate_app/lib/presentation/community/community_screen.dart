@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:travel_mate_app/app/theme.dart';
 import 'package:travel_mate_app/app/constants.dart';
+import 'package:travel_mate_app/app/responsive.dart';
 import 'package:travel_mate_app/domain/entities/post.dart';
 import 'package:travel_mate_app/domain/usecases/get_posts.dart';
 import 'package:travel_mate_app/presentation/common/app_app_bar.dart';
@@ -12,7 +12,7 @@ import 'package:travel_mate_app/presentation/common/empty_state_widget.dart';
 
 /// 커뮤니티 게시글 목록 화면. 글쓰기·상세 이동.
 class CommunityScreen extends StatefulWidget {
-  const CommunityScreen({Key? key}) : super(key: key);
+  const CommunityScreen({super.key});
 
   @override
   State<CommunityScreen> createState() => _CommunityScreenState();
@@ -88,12 +88,17 @@ class _CommunityScreenState extends State<CommunityScreen> {
                   : RefreshIndicator(
                   onRefresh: _loadPosts,
                   child: ListView.builder(
+                    padding: EdgeInsets.only(
+                      left: Responsive.value(context, compact: AppConstants.paddingSmall, medium: AppConstants.paddingMedium, expanded: AppConstants.paddingMedium),
+                      right: Responsive.value(context, compact: AppConstants.paddingSmall, medium: AppConstants.paddingMedium, expanded: AppConstants.paddingMedium),
+                      bottom: MediaQuery.paddingOf(context).bottom + 8,
+                    ),
                     itemCount: _posts.length,
                     itemBuilder: (context, index) {
                       final post = _posts[index];
                       return Card(
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: AppConstants.paddingMedium,
+                        margin: EdgeInsets.symmetric(
+                            horizontal: Responsive.value(context, compact: AppConstants.paddingSmall, medium: AppConstants.paddingMedium, expanded: AppConstants.paddingMedium),
                             vertical: AppConstants.paddingSmall),
                         color: AppColors.card,
                         shape: RoundedRectangleBorder(

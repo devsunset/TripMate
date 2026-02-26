@@ -1,4 +1,5 @@
 /// 사용자 프로필 조회·생성·수정·이미지 업로드 추상 레포지토리.
+library;
 import 'package:travel_mate_app/domain/entities/user_profile.dart';
 
 abstract class UserProfileRepository {

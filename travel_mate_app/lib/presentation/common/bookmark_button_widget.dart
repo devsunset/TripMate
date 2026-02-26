@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:travel_mate_app/app/theme.dart';
@@ -14,11 +13,11 @@ class BookmarkButtonWidget extends StatefulWidget {
   final bool initialIsBookmarked;
 
   const BookmarkButtonWidget({
-    Key? key,
+    super.key,
     required this.contentType,
     required this.contentId,
     this.initialIsBookmarked = false,
-  }) : super(key: key);
+  });
 
   @override
   State<BookmarkButtonWidget> createState() => _BookmarkButtonWidgetState();

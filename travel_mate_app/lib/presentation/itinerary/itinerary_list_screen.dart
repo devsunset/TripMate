@@ -6,12 +6,13 @@ import 'package:travel_mate_app/domain/usecases/get_itineraries.dart';
 
 import 'package:travel_mate_app/app/theme.dart';
 import 'package:travel_mate_app/app/constants.dart';
+import 'package:travel_mate_app/app/responsive.dart';
 import 'package:travel_mate_app/presentation/common/app_app_bar.dart';
 import 'package:travel_mate_app/presentation/common/empty_state_widget.dart';
 
 /// 일정 목록 화면. 일정 생성·상세 이동.
 class ItineraryListScreen extends StatefulWidget {
-  const ItineraryListScreen({Key? key}) : super(key: key);
+  const ItineraryListScreen({super.key});
 
   @override
   State<ItineraryListScreen> createState() => _ItineraryListScreenState();
@@ -86,12 +87,17 @@ class _ItineraryListScreenState extends State<ItineraryListScreen> {
                   : RefreshIndicator(
                   onRefresh: _loadItineraries,
                   child: ListView.builder(
+                    padding: EdgeInsets.only(
+                      left: Responsive.value(context, compact: AppConstants.paddingSmall, medium: AppConstants.paddingMedium, expanded: AppConstants.paddingMedium),
+                      right: Responsive.value(context, compact: AppConstants.paddingSmall, medium: AppConstants.paddingMedium, expanded: AppConstants.paddingMedium),
+                      bottom: MediaQuery.paddingOf(context).bottom + 8,
+                    ),
                     itemCount: _itineraries.length,
                     itemBuilder: (context, index) {
                       final itinerary = _itineraries[index];
                       return Card(
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: AppConstants.paddingMedium,
+                        margin: EdgeInsets.symmetric(
+                            horizontal: Responsive.value(context, compact: AppConstants.paddingSmall, medium: AppConstants.paddingMedium, expanded: AppConstants.paddingMedium),
                             vertical: AppConstants.paddingSmall),
                         color: AppColors.card,
                         shape: RoundedRectangleBorder(

@@ -207,3 +207,6 @@
 *   기술 스택(Flutter, Firebase for backend, MariaDB for database)은 앱의 모든 기능 요구사항을 안정적으로 지원할 수 있다.
 *   앱 내 신고 및 모니터링 시스템을 통해 부적절한 콘텐츠를 효과적으로 관리할 수 있다.
 *   명확한 이용 약관과 개인정보 처리방침을 통해 법적 문제를 예방하고 사용자 신뢰를 확보할 수 있다.
+
+---
+*구현 현황 및 API·스키마 상세: doc/test.txt(API 테스트), doc/trd.md(기술 요구사항), doc/travel_mate.sql(DB 스키마) 참조.*

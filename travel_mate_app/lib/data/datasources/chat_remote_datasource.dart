@@ -1,4 +1,5 @@
 /// Firestore 기반 채팅 메시지 조회·발송. 실시간 스트림 + 채팅 기록 저장.
+library;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:travel_mate_app/domain/entities/chat_message.dart';

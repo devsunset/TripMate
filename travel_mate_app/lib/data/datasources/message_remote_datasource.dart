@@ -1,4 +1,5 @@
 /// 1:1 쪽지 API 호출(백엔드 /api/messages).
+library;
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:travel_mate_app/app/constants.dart';

@@ -1,4 +1,5 @@
 /// 사용자 프로필 레포지토리 구현 (웹). dart:io 미사용. 이미지 업로드 시 예외.
+library;
 import 'package:travel_mate_app/data/datasources/profile_remote_datasource.dart';
 import 'package:travel_mate_app/data/models/user_profile_model.dart';
 import 'package:travel_mate_app/domain/entities/user_profile.dart';

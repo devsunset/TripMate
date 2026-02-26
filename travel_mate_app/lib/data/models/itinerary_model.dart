@@ -1,5 +1,6 @@
 /// 일정 DTO. JSON 직렬화 및 [Itinerary] 엔티티 확장.
 /// 백엔드(Sequelize)는 id, authorId 등을 int로 보낼 수 있으므로 int/String 모두 파싱.
+library;
 import 'package:travel_mate_app/domain/entities/itinerary.dart';
 
 class ItineraryModel extends Itinerary {
@@ -46,7 +47,7 @@ class ItineraryModel extends Itinerary {
     if (author == null) return null;
     final profile = author['UserProfile'] as Map<String, dynamic>? ?? author['userProfile'] as Map<String, dynamic>?;
     final nick = profile?['nickname'];
-    return nick == null ? null : nick.toString();
+    return nick?.toString();
   }
 
   factory ItineraryModel.fromJson(Map<String, dynamic> json) {

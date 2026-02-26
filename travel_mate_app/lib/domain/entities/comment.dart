@@ -1,4 +1,5 @@
 /// 댓글 엔티티 (게시글/일정 댓글·대댓글).
+library;
 import 'package:equatable/equatable.dart';
 
 class Comment extends Equatable {

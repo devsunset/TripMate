@@ -1,4 +1,5 @@
 /// 채팅 메시지 엔티티(발신자, 내용, 전송 시각 등).
+library;
 import 'package:equatable/equatable.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 

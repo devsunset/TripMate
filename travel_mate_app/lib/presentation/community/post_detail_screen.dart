@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:travel_mate_app/app/theme.dart';
+import 'package:travel_mate_app/app/responsive.dart';
 import 'package:travel_mate_app/core/services/auth_service.dart';
 import 'package:travel_mate_app/app/constants.dart';
 import 'package:travel_mate_app/domain/entities/post.dart';
@@ -22,7 +23,7 @@ import 'package:travel_mate_app/presentation/common/comment_section_widget.dart'
 class PostDetailScreen extends StatefulWidget {
   final String postId;
 
-  const PostDetailScreen({Key? key, required this.postId}) : super(key: key);
+  const PostDetailScreen({super.key, required this.postId});
 
   @override
   State<PostDetailScreen> createState() => _PostDetailScreenState();
@@ -216,7 +217,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           : _errorMessage != null
               ? Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                    padding: EdgeInsets.symmetric(horizontal: Responsive.value(context, compact: AppConstants.paddingSmall, medium: AppConstants.paddingMedium, expanded: AppConstants.paddingMedium)),
                     child: Text(
                       _errorMessage!,
                       style: TextStyle(color: AppColors.error),
@@ -232,7 +233,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       ),
                     )
                   : SingleChildScrollView(
-                      padding: const EdgeInsets.all(AppConstants.paddingLarge),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: Responsive.value(context, compact: AppConstants.paddingMedium, medium: AppConstants.paddingLarge, expanded: AppConstants.paddingLarge),
+                        vertical: AppConstants.paddingMedium,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [

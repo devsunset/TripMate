@@ -1,4 +1,5 @@
 /// 태그 DTO( id, tagName, type ). 동행 검색 필터 등에 사용.
+library;
 import 'package:equatable/equatable.dart';
 
 class Tag extends Equatable {

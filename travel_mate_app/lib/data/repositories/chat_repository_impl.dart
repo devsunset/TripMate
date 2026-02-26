@@ -1,4 +1,5 @@
 /// 채팅 레포지토리 구현. 목록·채팅 요청은 API, 메시지는 Firestore.
+library;
 import 'package:travel_mate_app/data/datasources/chat_remote_datasource.dart';
 import 'package:travel_mate_app/data/datasources/chat_api_datasource.dart';
 import 'package:travel_mate_app/domain/entities/chat_message.dart';

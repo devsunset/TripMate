@@ -1,4 +1,5 @@
 /// 일정 레포지토리 구현. 원격 데이터소스 위임.
+library;
 import 'dart:io' if (dart.library.html) 'package:travel_mate_app/core/io_stub/file_stub.dart';
 
 import 'package:travel_mate_app/data/datasources/itinerary_remote_datasource.dart';

@@ -1,4 +1,5 @@
 /// 게시글 또는 일정의 댓글 목록 조회.
+library;
 import 'package:travel_mate_app/domain/entities/comment.dart';
 import 'package:travel_mate_app/domain/repositories/comment_repository.dart';
 

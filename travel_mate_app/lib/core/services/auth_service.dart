@@ -1,5 +1,6 @@
 /// Firebase Auth 기반 로그인(Google만). 사용자 식별은 백엔드 랜덤 id만 사용(이메일 미수집·미저장).
 /// 웹에서는 SharedPreferences, 모바일에서는 FlutterSecureStorage 사용(웹에서 secure_storage 미지원/오류 방지).
+library;
 import 'dart:developer' as developer;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -21,6 +22,24 @@ class AuthService {
 
   /// 인증 상태 스트림(로그인/로그아웃 시 갱신).
   Stream<User?> get user => _firebaseAuth.authStateChanges();
+
+  /// Firebase 유저가 있어도 백엔드 GET /api/auth/me 로 유효성 검사. 401 등 실패 시 로그아웃 후 null 방출.
+  /// 라우터는 이 스트림을 사용해 로그인 여부를 판단하면, 토큰 만료 시 로그인 화면으로 보낼 수 있음.
+  Stream<User?> get verifiedUser async* {
+    await for (final user in _firebaseAuth.authStateChanges()) {
+      if (user == null) {
+        yield null;
+      } else {
+        final userId = await getCurrentBackendUserId();
+        if (userId == null) {
+          await signOut();
+          yield null;
+        } else {
+          yield user;
+        }
+      }
+    }
+  }
 
   /// 토큰 저장(실패해도 예외 전파하지 않음 — 로그인 성공을 깨지 않도록).
   Future<void> _storeIdToken(String? token) async {

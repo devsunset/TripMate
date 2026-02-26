@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:flutter_quill/quill_delta.dart' as quill_delta;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
@@ -22,7 +26,7 @@ import 'package:travel_mate_app/data/models/itinerary_model.dart';
 class ItineraryWriteScreen extends StatefulWidget {
   final String? itineraryId;
 
-  const ItineraryWriteScreen({Key? key, this.itineraryId}) : super(key: key);
+  const ItineraryWriteScreen({super.key, this.itineraryId});
 
   @override
   State<ItineraryWriteScreen> createState() => _ItineraryWriteScreenState();
@@ -31,11 +35,14 @@ class ItineraryWriteScreen extends StatefulWidget {
 class _ItineraryWriteScreenState extends State<ItineraryWriteScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
+  quill.QuillController? _quillController;
+  final FocusNode _editorFocusNode = FocusNode();
+  final ScrollController _editorScrollController = ScrollController();
+
   DateTime? _startDate;
   DateTime? _endDate;
 
-  List<File> _pickedImages = [];
+  final List<File> _pickedImages = [];
   List<String> _existingImageUrls = []; // For editing existing itinerary
 
   bool _isLoading = false;
@@ -47,10 +54,35 @@ class _ItineraryWriteScreenState extends State<ItineraryWriteScreen> {
   Set<Marker> _markers = {};
   LatLng _center = const LatLng(37.5665, 126.9780); // Default to Seoul
 
+  static quill.Document _documentFromContent(String content) {
+    if (content.trim().isEmpty) return quill.Document();
+    try {
+      final s = content.trim();
+      if (s.startsWith('[')) {
+        final list = jsonDecode(content) as List;
+        return quill.Document.fromDelta(quill_delta.Delta.fromJson(list));
+      }
+    } catch (_) {}
+    return quill.Document.fromDelta(quill_delta.Delta()..insert(content));
+  }
+
+  static String _contentFromDocument(quill.Document document) {
+    return jsonEncode(document.toDelta().toJson());
+  }
+
+  quill.QuillController _createController(quill.Document doc) {
+    return quill.QuillController(
+      document: doc,
+      selection: const TextSelection.collapsed(offset: 0),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
-    if (widget.itineraryId != null && widget.itineraryId!.isNotEmpty) {
+    if (widget.itineraryId == null || widget.itineraryId!.isEmpty) {
+      _quillController = _createController(quill.Document());
+    } else {
       _loadItineraryForEditing();
     }
   }
@@ -67,7 +99,10 @@ class _ItineraryWriteScreenState extends State<ItineraryWriteScreen> {
       _loadedItinerary = fetchedItinerary;
 
       _titleController.text = fetchedItinerary.title;
-      _descriptionController.text = fetchedItinerary.description;
+      if (mounted) {
+        _quillController?.dispose();
+        _quillController = _createController(_documentFromContent(fetchedItinerary.description));
+      }
       _startDate = fetchedItinerary.startDate;
       _endDate = fetchedItinerary.endDate;
       _existingImageUrls = List.from(fetchedItinerary.imageUrls);
@@ -171,6 +206,10 @@ class _ItineraryWriteScreenState extends State<ItineraryWriteScreen> {
   }
 
   Future<void> _submitItinerary() async {
+    if (_quillController == null || _quillController!.document.toPlainText().trim().isEmpty) {
+      setState(() => _errorMessage = '설명을 입력하세요.');
+      return;
+    }
     if (_formKey.currentState?.validate() ?? false) {
       setState(() {
         _isLoading = true;
@@ -203,7 +242,7 @@ class _ItineraryWriteScreenState extends State<ItineraryWriteScreen> {
           id: widget.itineraryId ?? '',
           authorId: userId,
           title: _titleController.text.trim(),
-          description: _descriptionController.text.trim(),
+          description: _contentFromDocument(_quillController!.document),
           startDate: _startDate!,
           endDate: _endDate!,
           imageUrls: allImageUrls,
@@ -242,8 +281,9 @@ class _ItineraryWriteScreenState extends State<ItineraryWriteScreen> {
   @override
   void dispose() {
     _titleController.dispose();
-    _descriptionController.dispose();
-    mapController.dispose();
+    _quillController?.dispose();
+    _editorFocusNode.dispose();
+    _editorScrollController.dispose();
     super.dispose();
   }
 
@@ -251,7 +291,7 @@ class _ItineraryWriteScreenState extends State<ItineraryWriteScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppAppBar(title: widget.itineraryId == null ? '일정 만들기' : '일정 수정'),
-      body: _isLoading
+      body: _isLoading && _quillController == null
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               padding: const EdgeInsets.all(AppConstants.paddingLarge),
@@ -274,20 +314,51 @@ class _ItineraryWriteScreenState extends State<ItineraryWriteScreen> {
                       },
                     ),
                     const SizedBox(height: AppConstants.spacingMedium),
-                    TextFormField(
-                      controller: _descriptionController,
-                      decoration: const InputDecoration(
-                        labelText: '설명',
-                        prefixIcon: Icon(Icons.description),
+                    const Text('설명', style: TextStyle(fontWeight: FontWeight.w500)),
+                    const SizedBox(height: AppConstants.spacingSmall),
+                    if (_quillController != null) ...[
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).cardColor,
+                          border: Border.all(color: AppColors.textSecondary.withOpacity(0.3)),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            quill.QuillSimpleToolbar(
+                              configurations: quill.QuillSimpleToolbarConfigurations(
+                                controller: _quillController!,
+                                showFontFamily: false,
+                                showFontSize: false,
+                                showAlignmentButtons: false,
+                                showLeftAlignment: false,
+                                showCenterAlignment: false,
+                                showRightAlignment: false,
+                                showJustifyAlignment: false,
+                                showDirection: false,
+                                showSearchButton: false,
+                                showSubscript: false,
+                                showSuperscript: false,
+                              ),
+                            ),
+                            Divider(height: 1, color: AppColors.textSecondary.withOpacity(0.3)),
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(minHeight: 160),
+                              child: quill.QuillEditor.basic(
+                                configurations: quill.QuillEditorConfigurations(
+                                  controller: _quillController!,
+                                  placeholder: '일정 설명을 입력하세요...',
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                ),
+                                focusNode: _editorFocusNode,
+                                scrollController: _editorScrollController,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      maxLines: 5,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return '설명을 입력하세요';
-                        }
-                        return null;
-                      },
-                    ),
+                    ],
                     const SizedBox(height: AppConstants.spacingMedium),
                     ListTile(
                       title: Text(

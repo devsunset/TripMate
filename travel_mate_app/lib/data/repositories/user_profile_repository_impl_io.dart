@@ -1,4 +1,5 @@
 /// 사용자 프로필 레포지토리 구현 (IO/모바일). dart:io 사용.
+library;
 import 'dart:io';
 
 import 'package:travel_mate_app/data/datasources/profile_remote_datasource.dart';

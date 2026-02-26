@@ -1,4 +1,5 @@
 /// 채팅방 목록 조회 유스케이스 (신청한/신청받은 채팅방 목록).
+library;
 import 'package:travel_mate_app/domain/entities/chat_room_info.dart';
 import 'package:travel_mate_app/domain/repositories/chat_repository.dart';
 

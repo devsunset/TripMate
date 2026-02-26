@@ -1,5 +1,6 @@
 /// TravelMate 앱 진입점.
 /// Firebase 초기화, FCM 백그라운드 핸들러 등록, Provider 의존성 주입 후 [TravelMateApp] 실행.
+library;
 import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -128,7 +129,7 @@ void main() async {
         Provider<FirebaseFirestore>(create: (_) => FirebaseFirestore.instance),
         Provider<AuthService>(create: (context) => AuthService(dio: context.read<Dio>())),
         StreamProvider<User?>(
-          create: (context) => context.read<AuthService>().user,
+          create: (context) => context.read<AuthService>().verifiedUser,
           initialData: null,
         ),
         Provider<FcmService>(
@@ -232,7 +233,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 /// 앱 빌드 후 FCM 초기화를 수행하는 래퍼 위젯.
 class FCMInitializer extends StatefulWidget {
   final Widget child;
-  const FCMInitializer({Key? key, required this.child}) : super(key: key);
+  const FCMInitializer({super.key, required this.child});
 
   @override
   State<FCMInitializer> createState() => _FCMInitializerState();

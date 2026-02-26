@@ -1,4 +1,5 @@
 /// 댓글 레포지토리 구현.
+library;
 import 'package:travel_mate_app/domain/entities/comment.dart';
 import 'package:travel_mate_app/domain/repositories/comment_repository.dart';
 import 'package:travel_mate_app/data/datasources/comment_remote_datasource.dart';

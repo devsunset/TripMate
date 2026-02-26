@@ -1,4 +1,5 @@
 /// 동행 검색 API 호출. GET /api/users/search
+library;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:dio/dio.dart';
 import 'package:travel_mate_app/app/constants.dart';

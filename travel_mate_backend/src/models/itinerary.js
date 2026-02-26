@@ -26,7 +26,7 @@ const Itinerary = sequelize.define('Itinerary', {
     allowNull: false,
   },
   description: {
-    type: DataTypes.TEXT,
+    type: DataTypes.TEXT('long'), // LONGTEXT (웹 에디터 본문)
     allowNull: false,
   },
   startDate: {

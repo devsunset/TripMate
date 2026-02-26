@@ -1,4 +1,5 @@
 /// 댓글 작성.
+library;
 import 'package:travel_mate_app/domain/entities/comment.dart';
 import 'package:travel_mate_app/domain/repositories/comment_repository.dart';
 

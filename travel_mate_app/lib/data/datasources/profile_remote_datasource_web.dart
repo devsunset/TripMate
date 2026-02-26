@@ -1,4 +1,5 @@
 /// 프로필 API 호출 (웹). dart:io 미사용. 이미지 업로드는 웹에서 미지원 시 예외.
+library;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:dio/dio.dart';
 import 'package:travel_mate_app/app/constants.dart';

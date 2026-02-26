@@ -1,4 +1,5 @@
 /// 사용자 프로필 DTO(JSON 직렬화, fromJson/toJson)
+library;
 import 'package:travel_mate_app/domain/entities/user_profile.dart';
 
 class UserProfileModel extends UserProfile {

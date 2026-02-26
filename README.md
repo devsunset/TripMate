@@ -50,12 +50,16 @@ flutter run
 
 ### 3. 데이터베이스
 
-MariaDB에 스키마 생성이 필요하면 doc/travel_mate.sql 을 실행하세요.
+- **최초 생성·초기화**: `doc/travel_mate.sql`을 DB에 적용해 스키마와 시드 데이터를 만듭니다.
+  - **방법 A (프로젝트 루트)**: `bash scripts/init-db.sh` — `travel_mate_backend/.env`의 `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`를 읽어 MariaDB/MySQL 클라이언트로 SQL 실행.
+  - **방법 B (백엔드 폴더)**: `npm run init-db` 또는 `node scripts/init-db.js` — 동일 .env를 사용해 Node(mariadb 드라이버)로 SQL 실행.
+- 수동 실행: MariaDB 클라이언트에서 `mysql -h 호스트 -u 사용자 -p < doc/travel_mate.sql` 로 적용 가능.
 
 ## 문서
 
 - **doc/firebase.txt** — Firebase 연동 상세 가이드 (Auth, Firestore. Storage 미사용 명시)
-- **doc/travel_mate.sql** — MariaDB 스키마 및 시드 데이터 (users PK=id 랜덤 영숫자, 이메일 미저장, chat_rooms.createdByUserId, posts.content LONGTEXT 등)
+- **doc/travel_mate.sql** — MariaDB 스키마 및 시드 데이터 (최초 생성 시 itineraries.description 포함 LONGTEXT, users PK=id 랜덤 영숫자, 이메일 미저장, chat_rooms.createdByUserId, posts.content LONGTEXT 등)
+- **test.txt** — API 전체 경우의 수별 curl 호출 예시 및 기대 응답 정리
 - **doc/trd.md** — 기술 요구사항 문서
 - **doc/prd.md** — 제품 요구사항 문서
 - **doc/firstvibe.json** — 초기 기획 QA 및 구현 요약

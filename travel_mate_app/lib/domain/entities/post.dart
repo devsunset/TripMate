@@ -1,4 +1,5 @@
 /// 커뮤니티 게시글 엔티티(제목, 내용, 이미지 URL, 작성자, 카테고리, 생성/수정일).
+library;
 import 'package:equatable/equatable.dart';
 
 class Post extends Equatable {

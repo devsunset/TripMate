@@ -16,7 +16,7 @@ import 'package:travel_mate_app/core/services/auth_service.dart';
 class UserProfileScreen extends StatefulWidget {
   final String userId;
 
-  const UserProfileScreen({Key? key, required this.userId}) : super(key: key);
+  const UserProfileScreen({super.key, required this.userId});
 
   @override
   State<UserProfileScreen> createState() => _UserProfileScreenState();
@@ -119,7 +119,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             child: Image.network(
               'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800',
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => const ColoredBox(color: Color(0xFF1E1E32)),
+              errorBuilder: (_, _, _) => const ColoredBox(color: Color(0xFF1E1E32)),
             ),
           ),
           Positioned.fill(

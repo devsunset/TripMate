@@ -48,7 +48,7 @@ graph TD
 |               | `dotenv`                                           | 환경 변수 관리                                               |
 |               | `jsonwebtoken`                                     | 선택적으로 내부 서비스 간 토큰 발행/검증                     |
 | **데이터베이스**| MariaDB (최신 안정 버전)                           | 관계형 데이터 저장 및 관리                                   |
-|               | Flyway / Knex.js                                   | 데이터베이스 스키마 마이그레이션 관리                        |
+|               | doc/travel_mate.sql                                | 초기 스키마 정의 (수동 적용 또는 DB 도구로 실행)              |
 | **클라우드 서비스**| Google Cloud Platform (GCP) / AWS / Azure (배포 환경) | API 서버 호스팅, MariaDB 인스턴스 호스팅 (Cloud SQL, RDS 등), CDN 등 |
 | **실시간 통신**| Firebase Firestore                                 | 1:1 실시간 채팅 메시지 동기화                                |
 | **파일 저장** | Node.js API 서버 (multer, uploads/)                | 프로필·게시글·일정 이미지 수신 및 저장 (POST /api/upload/*)  |
@@ -99,18 +99,14 @@ graph TD
 │   ├── .env                             # 환경 변수 (민감 정보는 CI/CD 환경 변수로 관리)
 │   ├── README.md
 │   └── ...                              # 기타 Node.js 프로젝트 파일
-├── database/                             # MariaDB 스키마 및 마이그레이션 스크립트
-│   ├── migrations/                      # 데이터베이스 스키마 변경 이력 관리 SQL 스크립트
-│   │   ├── V1__create_users_table.sql
-│   │   └── V2__create_posts_table.sql
-│   ├── schema.sql                       # 현재 데이터베이스 스키마 정의 (초기 배포용)
-│   └── README.md
-├── docs/                                 # 프로젝트 문서 (API 명세, 아키텍처 다이어그램 등)
-│   ├── api/
-│   │   └── openapi.yaml                 # OpenAPI/Swagger API 명세
-│   ├── architecture/
-│   │   └── overview.md
-│   └── README.md
+├── doc/                                  # 프로젝트 문서 및 DB 스키마 (현행)
+│   ├── travel_mate.sql                  # MariaDB 초기 스키마 정의 (DB 생성·초기화용, likes/bookmarks 대리키 포함)
+│   ├── test.txt                         # 백엔드 API 케이스별 테스트 결과 정리
+│   ├── trd.md                           # 기술 요구사항 문서
+│   ├── prd.md                           # 제품 요구사항 문서
+│   ├── todo.yaml                        # 태스크/할일 정의
+│   ├── firebase.txt                     # Firebase 연동 가이드
+│   └── firstvibe.json                   # 프로젝트 요약·QA 이력
 └── README.md                             # 프로젝트 루트 README
 ```
 

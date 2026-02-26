@@ -13,7 +13,7 @@ import 'package:travel_mate_app/domain/usecases/delete_user_account.dart';
 
 /// 계정 설정 화면. 로그아웃, 계정 삭제. 사용자 식별은 백엔드 id만 사용(이메일 미수집).
 class AccountSettingsScreen extends StatefulWidget {
-  const AccountSettingsScreen({Key? key}) : super(key: key);
+  const AccountSettingsScreen({super.key});
 
   @override
   State<AccountSettingsScreen> createState() => _AccountSettingsScreenState();

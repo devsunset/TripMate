@@ -1,4 +1,5 @@
 /// 채팅방 목록·채팅 요청 API (백엔드 GET /api/chat/rooms, POST /api/chat/room).
+library;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:dio/dio.dart';
 import 'package:travel_mate_app/app/constants.dart';

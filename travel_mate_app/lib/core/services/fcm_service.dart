@@ -1,4 +1,5 @@
 /// FCM 권한 요청, 토큰 발급/갱신, 백엔드에 토큰 전송, 포그라운드/백그라운드 메시지 수신 처리.
+library;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:dio/dio.dart';

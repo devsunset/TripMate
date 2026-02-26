@@ -19,10 +19,10 @@ class CommentSectionWidget extends StatefulWidget {
   final String parentId;
 
   const CommentSectionWidget({
-    Key? key,
+    super.key,
     required this.parentType,
     required this.parentId,
-  }) : super(key: key);
+  });
 
   @override
   State<CommentSectionWidget> createState() => _CommentSectionWidgetState();

@@ -1,4 +1,5 @@
 /// 채팅방 목록용 엔티티(채팅방 ID, 상대 ID, 마지막 메시지·시각, 신청한/신청받은 구분).
+library;
 import 'package:equatable/equatable.dart';
 
 class ChatRoomInfo extends Equatable {

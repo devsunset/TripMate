@@ -1,4 +1,5 @@
 /// 일정 단건 조회 유스케이스.
+library;
 import 'package:travel_mate_app/domain/entities/itinerary.dart';
 import 'package:travel_mate_app/domain/repositories/itinerary_repository.dart';
 

@@ -1,5 +1,6 @@
 /// GoRouter 설정. 로그인 여부에 따라 보호 경로 리다이렉트, 홈/로그인/프로필/채팅/커뮤니티/신고 등 경로 정의.
 /// 사용자 식별은 백엔드 랜덤 id만 사용(이메일 미수집·미저장).
+library;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -156,7 +157,7 @@ GoRouter createRouter(User? user) {
       ),
       GoRoute(
         path: '/itinerary/new',
-        builder: (_, __) => const ItineraryWriteScreen(itineraryId: null),
+        builder: (_, _) => const ItineraryWriteScreen(itineraryId: null),
       ),
       GoRoute(
         path: '/itinerary/:itineraryId',

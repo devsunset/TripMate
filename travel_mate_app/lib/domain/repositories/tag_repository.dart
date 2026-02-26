@@ -1,4 +1,5 @@
 /// 태그 조회 추상 레포지토리
+library;
 import 'package:travel_mate_app/data/models/tag_model.dart';
 
 abstract class TagRepository {

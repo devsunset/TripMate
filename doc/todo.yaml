@@ -1,3 +1,4 @@
+# 현행 구현: DB 초기 스키마는 doc/travel_mate.sql 단일 파일로 관리됨. 프로젝트 문서는 doc/ 폴더(trd.md, prd.md, test.txt, firebase.txt 등).
 project:
   name: 트래블 메이트
   description: Flutter 기반의 모바일 커뮤니티 애플리케이션으로, 사용자가 여행 동반자를 찾고, 여행 정보를 공유하며, 채팅 요청 후 신청한/신청받은 채팅방 목록에서 선택해 1:1 실시간 채팅으로 소통할 수 있도록 지원합니다. 사용자 식별자는 랜덤 영숫자 ID(users PK=id)이며 이메일은 수집·저장하지 않습니다. 로그인은 Google만 지원. 백엔드는 Firebase와 Node.js API 서버, MariaDB를 활용하며, 이미지는 백엔드 저장(Firebase Storage 미사용).
@@ -14,11 +15,8 @@ tasks:
       - path: travel_mate_backend/
         description: Node.js/Express 프로젝트 초기화 및 기본 폴더 구조 생성
         type: create
-      - path: database/
-        description: MariaDB 스키마 및 마이그레이션 스크립트 폴더 생성
-        type: create
-      - path: docs/
-        description: API 명세 및 아키텍처 문서 폴더 생성
+      - path: doc/
+        description: 프로젝트 문서 및 DB 스키마 (travel_mate.sql, trd, prd, test 등)
         type: create
       - path: package.json
         description: Node.js 프로젝트 의존성 관리 파일
@@ -89,7 +87,7 @@ tasks:
     title: MariaDB 기본 데이터베이스 스키마 구축
     priority: P0
     description: MariaDB에 사용자 인증 및 프로필 관리에 필요한 `users`, `user_profiles`, `tags`, `user_profile_tags` 테이블을 포함하여 TRD에 정의된 모든
-      기본 데이터 모델 스키마를 마이그레이션 스크립트를 통해 생성합니다.
+      기본 데이터 모델 스키마를 생성합니다. 현행 구현은 doc/travel_mate.sql 단일 파일에 전체 스키마(users, user_profiles, posts, comments, likes, bookmarks 등)가 정의되어 있으며, mysql < doc/travel_mate.sql 로 DB 초기화합니다.
     files:
       - path: database/migrations/V1__create_users_table.sql
         description: "`users` 테이블 생성 스크립트"

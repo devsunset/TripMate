@@ -15,11 +15,11 @@ class ReportButtonWidget extends StatelessWidget {
   final String? reporterUserId;
 
   const ReportButtonWidget({
-    Key? key,
+    super.key,
     required this.entityType,
     required this.entityId,
     this.reporterUserId,
-  }) : super(key: key);
+  });
 
   Future<void> _showReportDialog(BuildContext context) async {
     final authService = Provider.of<AuthService>(context, listen: false);
